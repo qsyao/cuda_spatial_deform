@@ -1,0 +1,7 @@
+data/
+cuda_backend/Makefile
+cuda_backend/CMakeCache.txt
+cuda_backend/CMakeFiles/
+cuda_backend/libcudaAugmentation.so
+cuda_backend/cmake_install.cmake
+cuda_backend/__pycache__/
