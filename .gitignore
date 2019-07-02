@@ -5,3 +5,4 @@ cuda_backend/CMakeFiles/
 cuda_backend/libcudaAugmentation.so
 cuda_backend/cmake_install.cmake
 cuda_backend/__pycache__/
+venv/
