@@ -1,7 +1,32 @@
 #include "utils.cuh"
 #include "ops_copy.cuh"
 
+__global__ void set_coords_2D(float* coords, size_t y, size_t x){
+    size_t index = blockIdx.x * blockDim.x + threadIdx.x;
+    size_t id_x = index % x;
+    size_t id_y = index / x;
+    if(index < x * y){
+        coords[id_x + id_y * x] = id_y - (float)y/2.0;
+        coords[id_x + id_y * x + x*y] = id_x - (float)x/2.0;
+    }
+    __syncthreads();
+}
+
+__global__ void set_coords_3D(float* coords, size_t z, size_t y, size_t x){
+    size_t index = blockIdx.x * blockDim.x + threadIdx.x;
+    size_t id_x = index % x;
+    size_t id_y = (index / x) % y;
+    size_t id_z = index / (x * y);
+    if(index < x * y * z){
+        coords[index] = id_z - (float)z/2.0;
+        coords[index + x * y * z] = id_y - (float)y/2.0;
+        coords[index + 2 * x * y * z] = id_x -(float)x/2.0;
+    }
+    __syncthreads();
+}
+
 void Handle::set_2D(size_t y, size_t x){
+    is_3D = false;
     dim_x = x;
     dim_y = y;
     total_size = dim_x * dim_y;
@@ -21,9 +46,18 @@ void Handle::set_2D(size_t y, size_t x){
                             total_size * sizeof(float)));
     checkCudaErrors(cudaMallocHost((void **)&pin_output,
                             total_size * sizeof(float)));
+
+    checkCudaErrors(cudaMallocHost((void **)&coords,
+                        2 * total_size * sizeof(float)));
+    
+    dim3 threads(min(total_size, (long)512), 1, 1);
+    dim3 blocks(total_size/512 + 1, 1, 1);
+    set_coords_2D<<<blocks, threads>>>(coords, dim_y, dim_x);
+    checkCudaErrors(cudaDeviceSynchronize());
 }
 
 void Handle::set_3D(size_t z, size_t y, size_t x){
+    is_3D = true;
     dim_x = x;
     dim_y = y;
     dim_z = z;
@@ -46,6 +80,14 @@ void Handle::set_3D(size_t z, size_t y, size_t x){
                             total_size * sizeof(float)));
     checkCudaErrors(cudaMallocHost((void **)&pin_output,
                             total_size * sizeof(float)));
+
+    checkCudaErrors(cudaMallocHost((void **)&coords,
+                        3 * total_size * sizeof(float)));
+                
+    dim3 threads(min(total_size, (long)512), 1, 1);
+    dim3 blocks(total_size/512 + 1, 1, 1);
+    set_coords_3D<<<blocks, threads>>>(coords, dim_z, dim_y, dim_x);
+    checkCudaErrors(cudaDeviceSynchronize());
 }
 
 void Handle::copy_input(float* input){
@@ -64,3 +106,23 @@ void Handle::copy_output(float* ret){
     memcpy(ret, pin_output, total_size * sizeof(float));
     checkCudaErrors(cudaDeviceSynchronize());
 }
+
+void Handle::check_coords(float* output){
+    float* pin;
+    if(is_3D){
+        checkCudaErrors(cudaMallocHost((void **)&pin,
+                           3 * total_size * sizeof(float)));
+        checkCudaErrors(cudaMemcpyAsync(pin, coords, 3 * total_size * sizeof(float),
+                            cudaMemcpyDeviceToHost));
+        memcpy(output, pin, 3 * total_size * sizeof(float));
+    }
+    else{
+        checkCudaErrors(cudaMallocHost((void **)&pin,
+                           2 * total_size * sizeof(float)));
+        checkCudaErrors(cudaMemcpyAsync(pin, coords, 2 * total_size * sizeof(float),
+                            cudaMemcpyDeviceToHost));
+        memcpy(output, pin, 2 * total_size * sizeof(float));       
+    }
+    checkCudaErrors(cudaFreeHost(pin));
+}
+

@@ -14,7 +14,7 @@ extern "C"{
 
 class Handle {
 public:
-    Handle() : batchsize(1), dim_x(0), dim_y(0), dim_z(0){}
+    Handle() : batchsize(1), dim_x(1), dim_y(1), dim_z(1){}
 
     void set_2D(size_t y, size_t x);
 
@@ -26,6 +26,8 @@ public:
 
     void copy_output(float* ret);
 
+    void check_coords(float* coords);
+    
     ~Handle(){
         checkCudaErrors(cudaFree(img));
         checkCudaErrors(cudaFree(output));
@@ -34,6 +36,7 @@ public:
     }
 
 private:
+    bool is_3D = false;
     size_t batchsize;
     size_t dim_z, dim_x, dim_y;
     size_t total_size;
@@ -41,6 +44,8 @@ private:
     float* output;
     float* pin_img;
     float* pin_output;
+
+    float* coords;
 };
     
 }
