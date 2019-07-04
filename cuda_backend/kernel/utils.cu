@@ -17,9 +17,9 @@ void Handle::set_2D(size_t y, size_t x){
                             total_size * sizeof(float)));
     checkCudaErrors(cudaMalloc((void **)&output,
                             total_size * sizeof(float)));
-    checkCudaErrors(cudaMalloc((void **)&pin_img,
+    checkCudaErrors(cudaMallocHost((void **)&pin_img,
                             total_size * sizeof(float)));
-    checkCudaErrors(cudaMalloc((void **)&pin_output,
+    checkCudaErrors(cudaMallocHost((void **)&pin_output,
                             total_size * sizeof(float)));
 }
 
@@ -42,15 +42,14 @@ void Handle::set_3D(size_t z, size_t y, size_t x){
                             total_size * sizeof(float)));
     checkCudaErrors(cudaMalloc((void **)&output,
                             total_size * sizeof(float)));
-    checkCudaErrors(cudaMalloc((void **)&pin_img,
+    checkCudaErrors(cudaMallocHost((void **)&pin_img,
                             total_size * sizeof(float)));
-    checkCudaErrors(cudaMalloc((void **)&pin_output,
+    checkCudaErrors(cudaMallocHost((void **)&pin_output,
                             total_size * sizeof(float)));
-}
 }
 
 void Handle::copy_input(float* input){
-    memcpy(pin_img, img, total_size * sizeof(float));
+    memcpy(pin_img, input, total_size * sizeof(float));
     checkCudaErrors(cudaMemcpyAsync(img, pin_img, total_size * sizeof(float),
                             cudaMemcpyHostToDevice));
 }

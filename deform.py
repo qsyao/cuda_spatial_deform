@@ -14,6 +14,43 @@ def create_zero_centered_coordinate_mesh(shape):
         coords[d] -= ((np.array(shape).astype(float)) / 2.)[d]
     return coords
 
+def create_matrix_rotation_x_3d(angle, matrix=None):
+    rotation_x = np.array([[1, 0, 0],
+                           [0, np.cos(angle), -np.sin(angle)],
+                           [0, np.sin(angle), np.cos(angle)]])
+    if matrix is None:
+        return rotation_x
+
+    return np.dot(matrix, rotation_x)
+
+
+def create_matrix_rotation_y_3d(angle, matrix=None):
+    rotation_y = np.array([[np.cos(angle), 0, np.sin(angle)],
+                           [0, 1, 0],
+                           [-np.sin(angle), 0, np.cos(angle)]])
+    if matrix is None:
+        return rotation_y
+
+    return np.dot(matrix, rotation_y)
+
+
+def create_matrix_rotation_z_3d(angle, matrix=None):
+    rotation_z = np.array([[np.cos(angle), -np.sin(angle), 0],
+                           [np.sin(angle), np.cos(angle), 0],
+                           [0, 0, 1]])
+    if matrix is None:
+        return rotation_z
+
+    return np.dot(matrix, rotation_z)
+
+def rotate_coords_3d(coords, angle_x, angle_y, angle_z):
+    rot_matrix = np.identity(len(coords))
+    rot_matrix = create_matrix_rotation_x_3d(angle_x, rot_matrix)
+    rot_matrix = create_matrix_rotation_y_3d(angle_y, rot_matrix)
+    rot_matrix = create_matrix_rotation_z_3d(angle_z, rot_matrix)
+    coords = np.dot(coords.reshape(len(coords), -1).transpose(), rot_matrix).transpose().reshape(coords.shape)
+    return coords
+
 def elastic_deform_coordinates(coordinates, alpha, sigma):
     n_dim = len(coordinates)
     offsets = []
@@ -37,21 +74,37 @@ if __name__ == "__main__":
         start = time.time()
         coords = create_zero_centered_coordinate_mesh(array_image.shape)
 
-        # alpha=(0., 1000.)
-        # sigma=(10., 13.)
-        # a = np.random.uniform(alpha[0], alpha[1])
-        # s = np.random.uniform(sigma[0], sigma[1])
-        # coords = elastic_deform_coordinates(coords, a, s)
+        alpha=(0., 1000.)
+        sigma=(10., 13.)
+        a = np.random.uniform(alpha[0], alpha[1])
+        s = np.random.uniform(sigma[0], sigma[1])
+        coords = elastic_deform_coordinates(coords, a, s)
 
+        # angle_x=(0, 2 * np.pi)
+        # angle_y=(0, 2 * np.pi)
+        # angle_z=(0, 2 * np.pi)
+        # if angle_x[0] == angle_x[1]:
+        #     a_x = angle_x[0]
+        # else:
+        #     a_x = np.random.uniform(angle_x[0], angle_x[1])
+        # if angle_y[0] == angle_y[1]:
+        #     a_y = angle_y[0]
+        # else:
+        #     a_y = np.random.uniform(angle_y[0], angle_y[1])
+        # if angle_z[0] == angle_z[1]:
+        #     a_z = angle_z[0]
+        # else:
+        #     a_z = np.random.uniform(angle_z[0], angle_z[1])
+        # coords = rotate_coords_3d(coords, a_x, a_y, a_z)
 
-        for d in range(len(array_image.shape)):
-            ctr = int(np.round(array_image.shape[d] / 2.))
-            coords[d] += ctr
+        # for d in range(len(array_image.shape)):
+        #     ctr = int(np.round(array_image.shape[d] / 2.))
+        #     coords[d] += ctr
         e_time = time.time()
         elastic_time += e_time - start
 
         ret = np.zeros_like(array_image)
-        map_coordinates(ret.astype(float), coords, order=3, mode='mirror').astype(ret.dtype)
+        map_coordinates(ret.astype(float), coords, order=1, mode='mirror').astype(ret.dtype)
         m_time = time.time()
         map_coordinates_time += m_time - e_time
 
