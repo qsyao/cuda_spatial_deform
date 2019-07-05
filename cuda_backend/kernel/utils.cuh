@@ -14,7 +14,9 @@ extern "C"{
 
 class Handle {
 public:
-    Handle() : batchsize(1), dim_x(1), dim_y(1), dim_z(1){}
+    Handle() : batchsize(1), dim_x(1), dim_y(1), dim_z(1){
+        checkCudaErrors(cudaStreamCreate(&stream));
+    }
 
     void set_2D(size_t y, size_t x);
 
@@ -50,6 +52,8 @@ private:
 
     float* coords;
     float* pin_coords;
+
+    cudaStream_t stream;
 };
     
 }

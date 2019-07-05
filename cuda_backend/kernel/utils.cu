@@ -56,12 +56,15 @@ void Handle::set_2D(size_t y, size_t x){
     
     dim3 threads(min(total_size, (long)512), 1, 1);
     dim3 blocks(total_size/512 + 1, 1, 1);
-    set_coords_2D<<<blocks, threads>>>(coords, dim_y, dim_x);
-    checkCudaErrors(cudaDeviceSynchronize());
+    set_coords_2D<<<blocks, threads, 0, stream>>>(coords, dim_y, dim_x);
+    checkCudaErrors(cudaStreamSynchronize(stream));
 }
 
 void Handle::scale(float scale){
-    host_apply_scale(coords, scale, coords_size);
+    assert(scale <= 1.0 && scale > 0.0);
+    dim3 threads(min(coords_size, (long)512), 1, 1);
+    dim3 blocks(coords_size/512 + 1, 1, 1);
+    device_apply_scale<<<blocks, threads, 0, stream>>>(coords, scale, coords_size);
 }
 
 void Handle::set_3D(size_t z, size_t y, size_t x){
@@ -94,17 +97,17 @@ void Handle::set_3D(size_t z, size_t y, size_t x){
                         coords_size * sizeof(float)));
     checkCudaErrors(cudaMallocHost((void **)&pin_coords,
                         coords_size * sizeof(float)));
-
+ 
     dim3 threads(min(total_size, (long)512), 1, 1);
     dim3 blocks(total_size/512 + 1, 1, 1);
-    set_coords_3D<<<blocks, threads>>>(coords, dim_z, dim_y, dim_x);
-    checkCudaErrors(cudaDeviceSynchronize());
+    set_coords_3D<<<blocks, threads, 0, stream>>>(coords, dim_z, dim_y, dim_x);
+    checkCudaErrors(cudaStreamSynchronize(stream));
 }
 
 void Handle::copy_input(float* input){
     memcpy(pin_img, input, total_size * sizeof(float));
     checkCudaErrors(cudaMemcpyAsync(img, pin_img, total_size * sizeof(float),
-                            cudaMemcpyHostToDevice));
+                            cudaMemcpyHostToDevice, stream));
 }
 
 void Handle::do_nothing(){
@@ -113,15 +116,15 @@ void Handle::do_nothing(){
 
 void Handle::copy_output(float* ret){
     checkCudaErrors(cudaMemcpyAsync(pin_output, output, total_size * sizeof(float),
-                            cudaMemcpyDeviceToHost));
-    checkCudaErrors(cudaDeviceSynchronize());
+                            cudaMemcpyDeviceToHost, stream));
+    checkCudaErrors(cudaStreamSynchronize(stream));
     memcpy(ret, pin_output, total_size * sizeof(float));
 }
 
 void Handle::check_coords(float* output){
     checkCudaErrors(cudaMemcpyAsync(pin_coords, coords, coords_size * sizeof(float),
-                        cudaMemcpyDeviceToHost));
-    checkCudaErrors(cudaDeviceSynchronize());
+                        cudaMemcpyDeviceToHost, stream));
+    checkCudaErrors(cudaStreamSynchronize(stream));
     memcpy(output, pin_coords, coords_size * sizeof(float));       
 }
 
