@@ -21,6 +21,9 @@ cu_do_nothing.argtypes = [c_void_p, ndpointer(np.float32), \
 check = lib.check_coords
 check.argtypes = [c_void_p, ndpointer(np.float32)]
 
+scale = lib.cu_scale
+scale.argtypes = [c_void_p, c_float]
+
 class Handle(object):
     def __init__(self, shape):
         self.shape = shape
@@ -39,6 +42,9 @@ class Handle(object):
         cu_do_nothing(self.cuda_handle, output, img)
         return output
     
+    def scale(self, sc):
+        scale(self.cuda_handle, sc)
+
     def check_coords(self):
         coords_shape = list(self.shape)
         coords_shape.insert(0, 3 if self.is_3D else 2)

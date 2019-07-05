@@ -26,7 +26,9 @@ if __name__ == "__main__":
 
     start = time.time()
     for i in range(Iters):
+        cuda_handle.scale(0.5)
         coords = cuda_handle.check_coords()
+        import ipdb; ipdb.set_trace()
     end = time.time()
     print("Get Coords for Shape:{} Cost {}ms".format(array_image.shape, \
                                     (end - start) * 1000 / Iters))    

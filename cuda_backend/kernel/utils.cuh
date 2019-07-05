@@ -28,6 +28,8 @@ public:
 
     void check_coords(float* coords);
 
+    void scale(float scale);
+
     ~Handle(){
         checkCudaErrors(cudaFree(img));
         checkCudaErrors(cudaFree(output));
@@ -40,6 +42,7 @@ private:
     size_t batchsize;
     size_t dim_z, dim_x, dim_y;
     size_t total_size;
+    size_t coords_size;
     float* img;
     float* output;
     float* pin_img;
