@@ -24,10 +24,12 @@ if __name__ == "__main__":
     test = output == array_image
     print(test)
 
-
-    coords = cuda_handle.check_coords()
-    cor_coords = create_zero_centered_coordinate_mesh(array_image.shape)
-    import ipdb; ipdb.set_trace()
+    start = time.time()
+    for i in range(Iters):
+        coords = cuda_handle.check_coords()
+    end = time.time()
+    print("Get Coords for Shape:{} Cost {}ms".format(array_image.shape, \
+                                    (end - start) * 1000 / Iters))    
 
     start = time.time()
     for i in range(Iters):

@@ -27,7 +27,7 @@ public:
     void copy_output(float* ret);
 
     void check_coords(float* coords);
-    
+
     ~Handle(){
         checkCudaErrors(cudaFree(img));
         checkCudaErrors(cudaFree(output));
@@ -46,6 +46,7 @@ private:
     float* pin_output;
 
     float* coords;
+    float* pin_coords;
 };
     
 }

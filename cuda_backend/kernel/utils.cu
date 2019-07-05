@@ -47,7 +47,9 @@ void Handle::set_2D(size_t y, size_t x){
     checkCudaErrors(cudaMallocHost((void **)&pin_output,
                             total_size * sizeof(float)));
 
-    checkCudaErrors(cudaMallocHost((void **)&coords,
+    checkCudaErrors(cudaMalloc((void **)&coords,
+                        2 * total_size * sizeof(float)));    
+    checkCudaErrors(cudaMallocHost((void **)&pin_coords,
                         2 * total_size * sizeof(float)));
     
     dim3 threads(min(total_size, (long)512), 1, 1);
@@ -81,9 +83,11 @@ void Handle::set_3D(size_t z, size_t y, size_t x){
     checkCudaErrors(cudaMallocHost((void **)&pin_output,
                             total_size * sizeof(float)));
 
-    checkCudaErrors(cudaMallocHost((void **)&coords,
+    checkCudaErrors(cudaMalloc((void **)&coords,
                         3 * total_size * sizeof(float)));
-                
+    checkCudaErrors(cudaMallocHost((void **)&pin_coords,
+                        3 * total_size * sizeof(float)));
+
     dim3 threads(min(total_size, (long)512), 1, 1);
     dim3 blocks(total_size/512 + 1, 1, 1);
     set_coords_3D<<<blocks, threads>>>(coords, dim_z, dim_y, dim_x);
@@ -110,19 +114,14 @@ void Handle::copy_output(float* ret){
 void Handle::check_coords(float* output){
     float* pin;
     if(is_3D){
-        checkCudaErrors(cudaMallocHost((void **)&pin,
-                           3 * total_size * sizeof(float)));
-        checkCudaErrors(cudaMemcpyAsync(pin, coords, 3 * total_size * sizeof(float),
+        checkCudaErrors(cudaMemcpyAsync(pin_coords, coords, 3 * total_size * sizeof(float),
                             cudaMemcpyDeviceToHost));
-        memcpy(output, pin, 3 * total_size * sizeof(float));
+        memcpy(output, pin_coords, 3 * total_size * sizeof(float));
     }
     else{
-        checkCudaErrors(cudaMallocHost((void **)&pin,
-                           2 * total_size * sizeof(float)));
-        checkCudaErrors(cudaMemcpyAsync(pin, coords, 2 * total_size * sizeof(float),
+        checkCudaErrors(cudaMemcpyAsync(pin_coords, coords, 2 * total_size * sizeof(float),
                             cudaMemcpyDeviceToHost));
-        memcpy(output, pin, 2 * total_size * sizeof(float));       
+        memcpy(output, pin_coords, 2 * total_size * sizeof(float));       
     }
-    checkCudaErrors(cudaFreeHost(pin));
 }
 
