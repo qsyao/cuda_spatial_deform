@@ -39,16 +39,17 @@ if __name__ == "__main__":
     # array_image = np.array(image)
     # import ipdb; ipdb.set_trace()
     cuda_handle = Handle(array_image.shape)
+    cuda_handle.scale(0.5)
 
     correct_ret = deform.spatial_augment(array_image)
     # Warm up and Unit test
     for i in range(100):
-        output = cuda_handle.test(array_image, 0.5)
-    check(correct_ret, output)
+        output = cuda_handle.interpolate(array_image)
+    check(correct_ret, output[0])
 
     start = time.time()
     for i in range(Iters):
-        output = cuda_handle.test(array_image, 0.5)
+        output = cuda_handle.interpolate(array_image)
     end = time.time()
     print("Shape:{} Augmentation On CUDA Cost {}ms".format(array_image.shape, \
                                     (end - start) * 1000 / Iters))
