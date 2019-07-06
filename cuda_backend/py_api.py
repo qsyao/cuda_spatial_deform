@@ -14,9 +14,9 @@ init_3D = lib.init_3D_handle
 init_3D.argtypes = [c_int, c_int, c_int]
 init_3D.restype = c_void_p
 
-cu_do_nothing = lib.test
-cu_do_nothing.argtypes = [c_void_p, ndpointer(np.float32), \
-                            ndpointer(np.float32)]
+cu_do_test = lib.test
+cu_do_test.argtypes = [c_void_p, ndpointer(np.float32), \
+                            ndpointer(np.float32), c_float]
 
 check = lib.check_coords
 check.argtypes = [c_void_p, ndpointer(np.float32)]
@@ -36,10 +36,10 @@ class Handle(object):
             self.is_3D = True
             self.cuda_handle = init_3D(shape[0], shape[1],  shape[2])
     
-    def do_nothing(self, img):
+    def test(self, img, scale):
         assert(img.shape == self.shape)
         output = np.ones(self.shape).astype(np.float32)
-        cu_do_nothing(self.cuda_handle, output, img)
+        cu_do_test(self.cuda_handle, output, img, scale)
         return output
     
     def scale(self, sc):

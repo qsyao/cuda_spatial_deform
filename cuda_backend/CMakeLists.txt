@@ -31,6 +31,7 @@ set(SOURCE_FILES
         kernel/test.cu
         kernel/utils.cu
         kernel/scale.cu
+        kernel/interpolate.cu
         kernel/ops_copy.cu)
 
 cuda_add_library(cudaAugmentation SHARED ${SOURCE_FILES})

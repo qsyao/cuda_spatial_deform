@@ -14,6 +14,9 @@ def create_zero_centered_coordinate_mesh(shape):
         coords[d] -= ((np.array(shape).astype(float)) / 2.)[d]
     return coords
 
+def scale_coords(coords, scale):
+    return coords * scale
+
 def create_matrix_rotation_x_3d(angle, matrix=None):
     rotation_x = np.array([[1, 0, 0],
                            [0, np.cos(angle), -np.sin(angle)],
@@ -22,7 +25,6 @@ def create_matrix_rotation_x_3d(angle, matrix=None):
         return rotation_x
 
     return np.dot(matrix, rotation_x)
-
 
 def create_matrix_rotation_y_3d(angle, matrix=None):
     rotation_y = np.array([[np.cos(angle), 0, np.sin(angle)],
@@ -61,6 +63,20 @@ def elastic_deform_coordinates(coordinates, alpha, sigma):
     indices = offsets + coordinates
     return indices
 
+def spatial_augment(img, do_scale=True, scale=0.5):
+    coords = create_zero_centered_coordinate_mesh(img.shape)
+
+    coords = scale_coords(coords, scale)
+
+    for d in range(len(img.shape)):
+        ctr = float(np.round(img.shape[d] / 2.))
+        coords[d] += ctr
+
+    ret = map_coordinates(img, coords, order=1, \
+                    mode='constant', cval=0.0).astype(img.dtype)
+    
+    return ret
+    
 if __name__ == "__main__":
     Iters = 10
 
@@ -97,14 +113,14 @@ if __name__ == "__main__":
         #     a_z = np.random.uniform(angle_z[0], angle_z[1])
         # coords = rotate_coords_3d(coords, a_x, a_y, a_z)
 
-        # for d in range(len(array_image.shape)):
-        #     ctr = int(np.round(array_image.shape[d] / 2.))
-        #     coords[d] += ctr
+        for d in range(len(array_image.shape)):
+            ctr = int(np.round(array_image.shape[d] / 2.))
+            coords[d] += ctr
         e_time = time.time()
         elastic_time += e_time - start
 
-        ret = np.zeros_like(array_image)
-        map_coordinates(ret.astype(float), coords, order=1, mode='mirror').astype(ret.dtype)
+        ret = map_coordinates(array_image, coords, order=1, \
+                mode='constant', cval=0.0).astype(img.dtype)
         m_time = time.time()
         map_coordinates_time += m_time - e_time
 

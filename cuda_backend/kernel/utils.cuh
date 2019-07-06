@@ -32,6 +32,10 @@ public:
 
     void scale(float scale);
 
+    void interpolate_linear();
+
+    void reset();
+
     ~Handle(){
         checkCudaErrors(cudaFree(img));
         checkCudaErrors(cudaFree(output));

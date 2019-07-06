@@ -1,6 +1,7 @@
 #include "utils.cuh"
 #include "ops_copy.cuh"
 #include "scale.cuh"
+#include "interpolate.cuh"
 
 __global__ void set_coords_2D(float* coords, size_t y, size_t x){
     size_t index = blockIdx.x * blockDim.x + threadIdx.x;
@@ -37,8 +38,8 @@ void Handle::set_2D(size_t y, size_t x){
              <<" dim_x : "<<dim_x
              <<" dim_y : "<<dim_y
              <<" total : "<<total_size<<std::endl;
-    std::cout<<"Malloc "<< total_size * sizeof(float)/1024/1024
-             << "MB(double)"<<std::endl;
+    std::cout<<"Malloc "<< 4 * total_size * sizeof(float)/1024/1024
+             << "MB"<<std::endl;
 
     checkCudaErrors(cudaMalloc((void **)&img,
                             total_size * sizeof(float)));
@@ -81,8 +82,8 @@ void Handle::set_3D(size_t z, size_t y, size_t x){
              <<" dim_z : "<<dim_z
              <<" total : "<<total_size<<std::endl;
 
-    std::cout<<"Malloc "<< total_size * sizeof(float)/1024/1024
-             << "MB(double)"<<std::endl;
+    std::cout<<"Malloc "<< 5 * total_size * sizeof(float)/1024/1024
+             << "MB"<<std::endl;
 
     checkCudaErrors(cudaMalloc((void **)&img,
                             total_size * sizeof(float)));
@@ -128,3 +129,31 @@ void Handle::check_coords(float* output){
     memcpy(output, pin_coords, coords_size * sizeof(float));       
 }
 
+void Handle::interpolate_linear(){
+    dim3 threads(min(total_size, (long)512), 1, 1);
+    dim3 blocks(total_size/512 + 1, 1, 1);
+
+    if(is_3D){
+        linear_interplate_3D<<<blocks, threads, 0, stream>>>(coords, img, output,
+                                                            dim_z, dim_y, dim_x);
+    }
+    else{
+        linear_interplate_2D<<<blocks, threads, 0, stream>>>(coords, img, output,
+                                                             dim_y, dim_x);
+    }
+}
+
+void Handle::reset(){
+    if(is_3D){
+        dim3 threads(min(total_size, (long)512), 1, 1);
+        dim3 blocks(total_size/512 + 1, 1, 1);
+        set_coords_3D<<<blocks, threads, 0, stream>>>(coords, dim_z, dim_y, dim_x);
+        checkCudaErrors(cudaStreamSynchronize(stream));
+    }
+    else{
+        dim3 threads(min(total_size, (long)512), 1, 1);
+        dim3 blocks(total_size/512 + 1, 1, 1);
+        set_coords_2D<<<blocks, threads, 0, stream>>>(coords, dim_y, dim_x);
+        checkCudaErrors(cudaStreamSynchronize(stream));
+    }
+}

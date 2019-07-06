@@ -14,10 +14,12 @@ Handle* init_3D_handle(size_t z, size_t y, size_t x){
     return ret;
 }
 
-void test(Handle* cuda_handle, float* output, float* input){
+void test(Handle* cuda_handle, float* output, float* input, float scale){
     cuda_handle->copy_input(input);
-    cuda_handle->do_nothing();
+    cuda_handle->scale(scale);
+    cuda_handle->interpolate_linear();
     cuda_handle->copy_output(output);
+    cuda_handle->reset();
 }
 
 void check_coords(Handle* cuda_handle, float* coords){

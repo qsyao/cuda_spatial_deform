@@ -8,4 +8,3 @@ __global__ void device_apply_scale(float* coords, float scale, size_t total_size
     }
     __syncthreads();
 }
-
