@@ -63,7 +63,7 @@ def elastic_deform_coordinates(coordinates, alpha, sigma):
     indices = offsets + coordinates
     return indices
 
-def spatial_augment(img, do_scale=True, scale=0.5):
+def spatial_augment(img, RGB=False, do_scale=True, scale=0.5):
     coords = create_zero_centered_coordinate_mesh(img.shape)
 
     coords = scale_coords(coords, scale)
@@ -72,8 +72,16 @@ def spatial_augment(img, do_scale=True, scale=0.5):
         ctr = float(np.round(img.shape[d] / 2.))
         coords[d] += ctr
 
-    ret = map_coordinates(img, coords, order=1, \
+    if not RGB:
+        ret = map_coordinates(img, coords, order=1, \
                     mode='constant', cval=0.0).astype(img.dtype)
+    else:
+        assert(img.shape[0] == 3)
+        ret = np.zeros_like(array_image)
+        for i in range(3):
+            ret[i] = map_coordinates(img[i], coords, order=1, \
+                    mode='constant', cval=0.0).astype(img.dtype)
+    
     
     return ret
     
@@ -90,11 +98,11 @@ if __name__ == "__main__":
         start = time.time()
         coords = create_zero_centered_coordinate_mesh(array_image.shape)
 
-        alpha=(0., 1000.)
-        sigma=(10., 13.)
-        a = np.random.uniform(alpha[0], alpha[1])
-        s = np.random.uniform(sigma[0], sigma[1])
-        coords = elastic_deform_coordinates(coords, a, s)
+        # alpha=(0., 1000.)
+        # sigma=(10., 13.)
+        # a = np.random.uniform(alpha[0], alpha[1])
+        # s = np.random.uniform(sigma[0], sigma[1])
+        # coords = elastic_deform_coordinates(coords, a, s)
 
         # angle_x=(0, 2 * np.pi)
         # angle_y=(0, 2 * np.pi)
@@ -120,7 +128,7 @@ if __name__ == "__main__":
         elastic_time += e_time - start
 
         ret = map_coordinates(array_image, coords, order=1, \
-                mode='constant', cval=0.0).astype(img.dtype)
+                mode='constant', cval=0.0).astype(array_image.dtype)
         m_time = time.time()
         map_coordinates_time += m_time - e_time
 

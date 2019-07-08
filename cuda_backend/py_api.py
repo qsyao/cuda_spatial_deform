@@ -15,13 +15,16 @@ init_3D.argtypes = [c_int, c_int, c_int]
 init_3D.restype = c_void_p
 
 l_i = lib.linear_interpolate
-l_i.argtypes = [c_void_p, ndpointer(np.float32), ndpointer(np.float32)]
+l_i.argtypes = [c_void_p, ndpointer(np.float32), ndpointer(np.float32), c_int]
 
 check = lib.check_coords
 check.argtypes = [c_void_p, ndpointer(np.float32)]
 
 scale = lib.cu_scale
 scale.argtypes = [c_void_p, c_float]
+
+end_flag = lib.endding_flag
+end_flag.argtypes = [c_void_p]
 
 class Spatial_Deform(object):
     def __init__(self, prob=1.0):
@@ -44,28 +47,57 @@ class Scale(Spatial_Deform):
         else:
             return None
 
+class End_Flag(Spatial_Deform):
+    def __init__(self, prob=1.0):
+        Spatial_Deform.__init__(self, prob)
+
+    def defrom(self, handle):
+        end_flag(handle)
+        return None
+
 class Handle(object):
-    def __init__(self, shape):
+    def __init__(self, shape, RGB=False):
+        self.RGB = RGB
         self.shape = shape
+        if self.RGB:
+            self.shape = shape[1:]
+            
         self.deform_list = []
+
         if(len(shape) != 2 and len(shape) != 3):
             raise ValueError
-        if(len(shape) == 2):
-            self.cuda_handle = init_2D(shape[0],  shape[1])
+        if(len(shape) == 2 or RGB):
+            self.cuda_handle = init_2D(self.shape[0], self.shape[1])
             self.is_3D = False
         else:
             self.is_3D = True
             self.cuda_handle = init_3D(shape[0], shape[1],  shape[2])
     
-    def interpolate(self, img):
-        assert(img.shape == self.shape)
-        output = np.ones(self.shape).astype(np.float32)
+    def augment(self, img):
+        if self.RGB:
+            assert(img.shape[0] == 3)
+            assert(img.shape[1:] == self.shape)
+        else:
+            assert(img.shape == self.shape)
+        output = np.ones(img.shape).astype(np.float32)
         labels = self.deform_coords()
-        l_i(self.cuda_handle, output, img)
+
+        if not self.RGB:
+            l_i(self.cuda_handle, output, img, 1)
+        else:
+            for i in range(3):
+                if i == 2:
+                    l_i(self.cuda_handle, output[i], img[i], 1)
+                else:
+                    l_i(self.cuda_handle, output[i], img[i], 0)
+
         return [output, labels]
 
     def scale(self, sc, prob=1.0):
         self.deform_list.append(Scale(sc, prob))
+
+    def end_flag(self):
+        self.deform_list.append(End_Flag())
 
     def get_coords(self):
         coords_shape = list(self.shape)

@@ -8,4 +8,8 @@
 
 __global__ void device_apply_scale(float* coords, float scale, size_t total_size);
 
+__global__ void recenter_2D(float* coords, size_t dim_y, size_t dim_x);
+
+__global__ void recenter_3D(float* coords, size_t dim_z, size_t dim_y, size_t dim_x);
+
 #endif

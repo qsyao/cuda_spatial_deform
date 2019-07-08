@@ -25,31 +25,27 @@ def check(correct, output):
         return True
     else:
         print("Unit_test Failed: Max loss is {}".format(max_loss))
+        import ipdb; ipdb.set_trace()
         return False
 
-if __name__ == "__main__":
+def test_3D():
     data_pth = 'data/FLAIR.nii.gz'
     sitk_image = sitk.ReadImage(data_pth)
     array_image = sitk.GetArrayFromImage(sitk_image).copy()
 
-    # data_pth = 'data/Danny.jpg'
-    # image = Image.open(data_pth)
-    # # plt.imshow(image)
-    # # plt.show()
-    # array_image = np.array(image)
-    # import ipdb; ipdb.set_trace()
     cuda_handle = Handle(array_image.shape)
     cuda_handle.scale(0.5)
+    cuda_handle.end_flag()
 
     correct_ret = deform.spatial_augment(array_image)
     # Warm up and Unit test
     for i in range(100):
-        output = cuda_handle.interpolate(array_image)
+        output = cuda_handle.augment(array_image)
     check(correct_ret, output[0])
 
     start = time.time()
     for i in range(Iters):
-        output = cuda_handle.interpolate(array_image)
+        output = cuda_handle.augment(array_image)
     end = time.time()
     print("Shape:{} Augmentation On CUDA Cost {}ms".format(array_image.shape, \
                                     (end - start) * 1000 / Iters))
@@ -60,3 +56,50 @@ if __name__ == "__main__":
     end = time.time()
     print("Shape:{} Augmentation On CPU Cost {}ms".format(array_image.shape, \
                                     (end - start) * 1000 / Iters_CPU))
+
+def test_2D():
+
+    data_pth = 'data/Danny.jpg'
+    image = Image.open(data_pth)
+    array_image = np.array(image)
+    raw = array_image
+    array_image = array_image.transpose(2,0,1).astype(np.float32).copy()
+
+    cuda_handle = Handle(array_image.shape, RGB=True)
+    cuda_handle.scale(0.5)
+    cuda_handle.end_flag()
+
+    if len(array_image.shape) == 2:
+        correct_ret = deform.spatial_augment(array_image)
+    else:
+        correct_ret = np.zeros_like(array_image)
+        for i in range(3):
+            correct_ret[i] = deform.spatial_augment(array_image[i])
+
+    # Warm up and Unit test
+    for i in range(100):
+        output = cuda_handle.augment(array_image)
+    check(correct_ret, output[0])
+
+    start = time.time()
+    for i in range(Iters):
+        output = cuda_handle.augment(array_image)
+    end = time.time()
+    print("Shape:{} Augmentation On CUDA Cost {}ms".format(array_image.shape, \
+                                    (end - start) * 1000 / Iters))
+
+    start = time.time()
+    for i in range(Iters_CPU):
+        if len(array_image.shape) == 2:
+            correct_ret = deform.spatial_augment(array_image)
+        else:
+            correct_ret = np.zeros_like(array_image)
+            for i in range(3):
+                correct_ret[i] = deform.spatial_augment(array_image[i])
+    end = time.time()
+    print("Shape:{} Augmentation On CPU Cost {}ms".format(array_image.shape, \
+                                    (end - start) * 1000 / Iters_CPU)) 
+
+if __name__ == "__main__":
+    # test_3D()
+    test_2D()

@@ -9,9 +9,6 @@ __global__ void linear_interplate_2D(float* coords,
     size_t index = blockIdx.x * blockDim.x + threadIdx.x;
 
     if(index < dim_x * dim_y){
-        // recenter
-        coords[index] += (float)dim_y/2.0;
-        coords[index + dim_x*dim_y] += (float)dim_x/2.0;
 
         float coords_y = coords[index];
         float coords_x = coords[index + dim_x*dim_y];
@@ -45,10 +42,6 @@ __global__ void linear_interplate_3D(float* coords,
     size_t dim_xy = dim_x * dim_y;
 
     if(index < total){
-        // recenter
-        coords[index] += (float)dim_z/2.0;
-        coords[index + total] += (float)dim_y/2.0;
-        coords[index + 2 * total] += (float)dim_x/2.0;
    
         float coords_z = coords[index];
         float coords_y = coords[index + total];

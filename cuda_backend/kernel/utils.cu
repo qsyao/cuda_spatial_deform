@@ -1,6 +1,6 @@
 #include "utils.cuh"
 #include "ops_copy.cuh"
-#include "scale.cuh"
+#include "spatial_deform.cuh"
 #include "interpolate.cuh"
 
 __global__ void set_coords_2D(float* coords, size_t y, size_t x){
@@ -154,6 +154,21 @@ void Handle::reset(){
         dim3 threads(min(total_size, (long)512), 1, 1);
         dim3 blocks(total_size/512 + 1, 1, 1);
         set_coords_2D<<<blocks, threads, 0, stream>>>(coords, dim_y, dim_x);
+        checkCudaErrors(cudaStreamSynchronize(stream));
+    }
+}
+
+void Handle::recenter(){
+    if(is_3D){
+        dim3 threads(min(total_size, (long)512), 1, 1);
+        dim3 blocks(total_size/512 + 1, 1, 1);
+        recenter_3D<<<blocks, threads, 0, stream>>>(coords, dim_z, dim_y, dim_x);
+        checkCudaErrors(cudaStreamSynchronize(stream));
+    }
+    else{
+        dim3 threads(min(total_size, (long)512), 1, 1);
+        dim3 blocks(total_size/512 + 1, 1, 1);
+        recenter_2D<<<blocks, threads, 0, stream>>>(coords, dim_y, dim_x);
         checkCudaErrors(cudaStreamSynchronize(stream));
     }
 }

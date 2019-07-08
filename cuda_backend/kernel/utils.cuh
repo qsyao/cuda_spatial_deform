@@ -36,6 +36,8 @@ public:
 
     void reset();
 
+    void recenter();
+
     ~Handle(){
         checkCudaErrors(cudaFree(img));
         checkCudaErrors(cudaFree(output));
