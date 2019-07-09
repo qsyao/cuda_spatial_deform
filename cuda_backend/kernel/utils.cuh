@@ -40,6 +40,8 @@ public:
 
     void flip(int do_x, int do_y, int do_z=0);
 
+    void translate(float seg_x=0, float seg_y=0, float seg_z=0);
+
     ~Handle(){
         checkCudaErrors(cudaFree(img));
         checkCudaErrors(cudaFree(output));

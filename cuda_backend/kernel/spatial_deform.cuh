@@ -26,4 +26,19 @@ __global__ void flip_3D(float* coords,
                         int do_y,
                         int do_x);                        
 
+
+__global__ void translate_3D(float* coords,
+                        size_t dim_z,
+                        size_t dim_y, 
+                        size_t dim_x,
+                        float seg_z,
+                        float seg_y,
+                        float seg_x);
+
+__global__ void translate_2D(float* coords, 
+                        size_t dim_y, 
+                        size_t dim_x,
+                        float seg_y,
+                        float seg_x);                      
+
 #endif

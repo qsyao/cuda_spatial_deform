@@ -29,6 +29,9 @@ end_flag.argtypes = [c_void_p]
 flip = lib.cu_flip
 flip.argtypes = [c_void_p, c_int, c_int, c_int]
 
+translate = lib.cu_translate
+translate.argtypes = [c_void_p, c_float, c_float, c_float]
+
 class Spatial_Deform(object):
     def __init__(self, prob=1.0):
         self.prob = prob
@@ -71,6 +74,21 @@ class Flip(Spatial_Deform):
         else:
             return None
 
+class Translate(Spatial_Deform):
+    def __init__(self, seg_x=0.0, seg_y=0.0, seg_z=0.0, prob=1.0):
+        Spatial_Deform.__init__(self, prob)
+        self.label = 'Translate'
+        self.seg_x = seg_x
+        self.seg_y = seg_y
+        self.seg_z = seg_z
+    
+    def defrom(self, handle):
+        if np.random.uniform() < self.prob:
+            translate(handle, self.seg_x, self.seg_y, self.seg_z)
+            return self.label
+        else:
+            return None
+
 class End_Flag(Spatial_Deform):
     def __init__(self, prob=1.0):
         Spatial_Deform.__init__(self, prob)
@@ -106,8 +124,8 @@ class Handle(object):
         output = np.ones(img.shape).astype(np.float32)
         labels = self.deform_coords()
         
-        # check coords
-        self.get_coords()
+        # # check coords
+        # self.get_coords()
 
         if not self.RGB:
             l_i(self.cuda_handle, output, img, 1)
@@ -125,6 +143,9 @@ class Handle(object):
     
     def flip(self, do_x=False, do_y=False, do_z=False, prob=1.0):
         self.deform_list.append(Flip(do_x, do_y, do_z, prob))
+
+    def translate(self, seg_x=0.0, seg_y=0.0, seg_z=0.0, prob=1.0):
+        self.deform_list.append(Translate(seg_x, seg_y, seg_z, prob))
 
     def end_flag(self):
         self.deform_list.append(End_Flag())
