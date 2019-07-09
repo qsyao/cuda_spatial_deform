@@ -42,6 +42,10 @@ public:
 
     void translate(float seg_x=0, float seg_y=0, float seg_z=0);
 
+    void host_rotate_2D(float angle);
+
+    void host_rotate_3D(float* rot_matrix);
+
     ~Handle(){
         checkCudaErrors(cudaFree(img));
         checkCudaErrors(cudaFree(output));
@@ -60,6 +64,7 @@ private:
     float* pin_img;
     float* pin_output;
 
+    float* gpu_rot_matrix;
     float* coords;
     float* pin_coords;
 

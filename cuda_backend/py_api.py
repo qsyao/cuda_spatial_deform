@@ -32,6 +32,12 @@ flip.argtypes = [c_void_p, c_int, c_int, c_int]
 translate = lib.cu_translate
 translate.argtypes = [c_void_p, c_float, c_float, c_float]
 
+rotate_2D = lib.cu_rotate_2D
+rotate_2D.argtypes = [c_void_p, c_float]
+
+rotate_3D = lib.cu_rotate_3D
+rotate_3D.argtypes = [c_void_p, ndpointer(np.float32)]
+
 class Spatial_Deform(object):
     def __init__(self, prob=1.0):
         self.prob = prob
@@ -86,6 +92,40 @@ class Translate(Spatial_Deform):
         if np.random.uniform() < self.prob:
             translate(handle, self.seg_x, self.seg_y, self.seg_z)
             return self.label
+        else:
+            return None
+
+class Rotate(Spatial_Deform):
+    def __init__(self, is_2D, angel_x, angle_y=0, angle_z=0, prob=1.0):
+        Spatial_Deform.__init__(self, prob)
+        self.label = 'Rotate'
+        self.is_2D = is_2D
+        self.angel_x = angel_x
+        self.angle_y = angle_y
+        self.angle_z = angle_z
+        self.matrix = np.identity(3).astype(np.float32)
+        if not is_2D:
+            rotation_x = np.array([[1, 0, 0],
+                           [0, np.cos(angel_x), -np.sin(angel_x)],
+                           [0, np.sin(angel_x), np.cos(angel_x)]]).astype(np.float32)
+            rotation_y = np.array([[np.cos(angle_y), 0, np.sin(angle_y)],
+                           [0, 1, 0],
+                           [-np.sin(angle_y), 0, np.cos(angle_y)]]).astype(np.float32)
+            rotation_z = np.array([[np.cos(angle_z), -np.sin(angle_z), 0],
+                           [np.sin(angle_z), np.cos(angle_z), 0],
+                           [0, 0, 1]]).astype(np.float32)
+            self.matrix = np.dot(self.matrix, rotation_x)
+            self.matrix = np.dot(self.matrix, rotation_y)
+            self.matrix = np.dot(self.matrix, rotation_z)        
+    
+    def defrom(self, handle):
+        if np.random.uniform() < self.prob:
+            if self.is_2D:
+                rotate_2D(handle, self.angel_x)
+                return self.label
+            else:
+                rotate_3D(handle, self.matrix)
+                return self.label
         else:
             return None
 
@@ -146,6 +186,9 @@ class Handle(object):
 
     def translate(self, seg_x=0.0, seg_y=0.0, seg_z=0.0, prob=1.0):
         self.deform_list.append(Translate(seg_x, seg_y, seg_z, prob))
+    
+    def rotate(self, angel_x=0, angle_y=0, angle_z=0, prob=1.0):
+        self.deform_list.append(Rotate(not self.is_3D, angel_x, angle_y, angle_z, prob))
 
     def end_flag(self):
         self.deform_list.append(End_Flag())

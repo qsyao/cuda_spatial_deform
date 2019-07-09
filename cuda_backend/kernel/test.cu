@@ -34,12 +34,20 @@ void cu_scale(Handle* cuda_handle, float scale){
     cuda_handle->scale(scale);
 }
 
+void cu_rotate_3D(Handle* cuda_handle, float* rot_matrix){
+    cuda_handle->host_rotate_3D(rot_matrix);
+}
+
 void cu_flip(Handle* cuda_handle, int do_x, int do_y, int do_z){
     cuda_handle->flip(do_x, do_y, do_z);
 }
 
 void cu_translate(Handle* cuda_handle, float seg_x, float seg_y, float seg_z){
     cuda_handle->translate(seg_x, seg_y, seg_z);
+}
+
+void cu_rotate_2D(Handle* cuda_handle, float angle){
+    cuda_handle->host_rotate_2D(angle);
 }
 
 void endding_flag(Handle* cuda_handle){

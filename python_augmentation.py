@@ -8,7 +8,7 @@ from cuda_backend.py_api import Handle
 import deform
 
 Iters = 1000
-Iters_CPU = 1
+Iters_CPU = 10
 
 def create_zero_centered_coordinate_mesh(shape):
     tmp = tuple([np.arange(i) for i in shape])
@@ -18,13 +18,19 @@ def create_zero_centered_coordinate_mesh(shape):
     return coords
 
 def check(correct, output):
+    '''
+    Unit Test Pass When less than 0.001 loss ( > 0.001)
+    '''
     assert(correct.shape == output.shape)
-    max_loss = np.abs(output - correct).max()
-    if max_loss < 1e-4:
-        print("Unit_test Successful Pass: Max loss < 0.0001")
+    loss = np.abs(output - correct)
+    count = np.sum(loss > 1e-3)
+    max_loss = loss.max()
+    total = loss.reshape(-1).shape[0]
+    if count < 1e-3 * total:
+        print("Unit_test Successful Pass")
         return True
     else:
-        print("Unit_test Failed: Max loss is {}".format(max_loss))
+        print("Unit_test Failed: Rate is {}".format(count / total))
         import ipdb; ipdb.set_trace()
         return False
 
@@ -36,7 +42,8 @@ def test_3D():
     cuda_handle = Handle(array_image.shape)
     # cuda_handle.scale(0.5)
     # cuda_handle.flip(do_y=True, do_x=True, do_z=True)
-    cuda_handle.translate(100, 100, 20)
+    # cuda_handle.translate(100, 100, 20)
+    cuda_handle.rotate(0.75 * np.pi, 0.75 * np.pi, 0.75 * np.pi)
     cuda_handle.end_flag()
 
     correct_ret = deform.spatial_augment(array_image)
@@ -61,7 +68,7 @@ def test_3D():
 
 def test_2D():
 
-    data_pth = 'data/Danny.jpg'
+    data_pth = 'data/Daenerys.jpg'
     image = Image.open(data_pth)
     array_image = np.array(image)
     raw = array_image
@@ -70,7 +77,8 @@ def test_2D():
     cuda_handle = Handle(array_image.shape, RGB=True)
     # cuda_handle.scale(0.5)
     # cuda_handle.flip(do_y=True)
-    cuda_handle.translate(400, 400)
+    # cuda_handle.translate(400, 400)
+    cuda_handle.rotate(0.75 * np.pi)
     cuda_handle.end_flag()
 
     if len(array_image.shape) == 2:
@@ -117,5 +125,5 @@ def test_2D():
                                     (end - start) * 1000 / Iters_CPU)) 
 
 if __name__ == "__main__":
-    # test_3D()
-    test_2D()
+    test_3D()
+    # test_2D()

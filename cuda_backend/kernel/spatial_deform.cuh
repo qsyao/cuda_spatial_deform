@@ -41,4 +41,16 @@ __global__ void translate_2D(float* coords,
                         float seg_y,
                         float seg_x);                      
 
+__global__ void rotate_2D(float* coords, 
+                        size_t dim_y, 
+                        size_t dim_x,
+                        float cos_angle,
+                        float sin_angle);
+
+__global__ void rotate_3D(float* coords, 
+                        size_t dim_z,
+                        size_t dim_y, 
+                        size_t dim_x,
+                        float* rot_matrix);
+
 #endif

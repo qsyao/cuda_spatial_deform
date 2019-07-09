@@ -3,6 +3,8 @@
 #include "spatial_deform.cuh"
 #include "interpolate.cuh"
 
+#include <math.h>
+
 __global__ void set_coords_2D(float* coords, size_t y, size_t x){
     size_t index = blockIdx.x * blockDim.x + threadIdx.x;
     size_t id_x = index % x;
@@ -61,6 +63,45 @@ void Handle::set_2D(size_t y, size_t x){
     checkCudaErrors(cudaStreamSynchronize(stream));
 }
 
+void Handle::set_3D(size_t z, size_t y, size_t x){
+    is_3D = true;
+    dim_x = x;
+    dim_y = y;
+    dim_z = z;
+    total_size = dim_x * dim_y * dim_z;
+    coords_size = total_size * 3;
+
+    std::cout<<"Malloc for 3D image ----------\n"
+             <<" dim_x : "<<dim_x
+             <<" dim_y : "<<dim_y
+             <<" dim_z : "<<dim_z
+             <<" total : "<<total_size<<std::endl;
+
+    std::cout<<"Malloc "<< 5 * total_size * sizeof(float)/1024/1024
+             << "MB"<<std::endl;
+
+    checkCudaErrors(cudaMalloc((void **)&gpu_rot_matrix, 9 * sizeof(float)));
+
+    checkCudaErrors(cudaMalloc((void **)&img,
+                            total_size * sizeof(float)));
+    checkCudaErrors(cudaMalloc((void **)&output,
+                            total_size * sizeof(float)));
+    checkCudaErrors(cudaMallocHost((void **)&pin_img,
+                            total_size * sizeof(float)));
+    checkCudaErrors(cudaMallocHost((void **)&pin_output,
+                            total_size * sizeof(float)));
+
+    checkCudaErrors(cudaMalloc((void **)&coords,
+                        coords_size * sizeof(float)));
+    checkCudaErrors(cudaMallocHost((void **)&pin_coords,
+                        coords_size * sizeof(float)));
+ 
+    dim3 threads(min(total_size, (long)512), 1, 1);
+    dim3 blocks(total_size/512 + 1, 1, 1);
+    set_coords_3D<<<blocks, threads, 0, stream>>>(coords, dim_z, dim_y, dim_x);
+    checkCudaErrors(cudaStreamSynchronize(stream));
+}
+
 void Handle::scale(float scale){
     assert(scale <= 1.0 && scale > 0.0);
     dim3 threads(min(coords_size, (long)512), 1, 1);
@@ -84,6 +125,27 @@ void Handle::flip(int do_x, int do_y, int do_z){
     }
 }
 
+void Handle::host_rotate_2D(float angle){
+    float cos_angle = cos(angle);
+    float sin_angle = sin(angle);
+    dim3 threads(min(total_size, (long)512), 1, 1);
+    dim3 blocks(total_size/512 + 1, 1, 1);
+    rotate_2D<<<blocks, threads, 0, stream>>>(coords, dim_y, dim_x, cos_angle, sin_angle);
+    checkCudaErrors(cudaStreamSynchronize(stream));    
+}
+
+void Handle::host_rotate_3D(float* rot_matrix){
+    checkCudaErrors(cudaMemcpyAsync(gpu_rot_matrix, 
+                                    rot_matrix, 
+                                    9 * sizeof(float),
+                                    cudaMemcpyHostToDevice, 
+                                    stream));
+    dim3 threads(min(total_size, (long)512), 1, 1);
+    dim3 blocks(total_size/512 + 1, 1, 1);
+    rotate_3D<<<blocks, threads, 0, stream>>>(coords, dim_z, dim_y, dim_x, gpu_rot_matrix);
+    checkCudaErrors(cudaStreamSynchronize(stream));    
+}
+
 void Handle::translate(float seg_x, float seg_y, float seg_z){
     if(is_3D){
         dim3 threads(min(total_size, (long)512), 1, 1);
@@ -98,43 +160,6 @@ void Handle::translate(float seg_x, float seg_y, float seg_z){
         translate_2D<<<blocks, threads, 0, stream>>>(coords, dim_y, dim_x, seg_y, seg_x);
         checkCudaErrors(cudaStreamSynchronize(stream));
     }    
-}
-
-void Handle::set_3D(size_t z, size_t y, size_t x){
-    is_3D = true;
-    dim_x = x;
-    dim_y = y;
-    dim_z = z;
-    total_size = dim_x * dim_y * dim_z;
-    coords_size = total_size * 3;
-
-    std::cout<<"Malloc for 3D image ----------\n"
-             <<" dim_x : "<<dim_x
-             <<" dim_y : "<<dim_y
-             <<" dim_z : "<<dim_z
-             <<" total : "<<total_size<<std::endl;
-
-    std::cout<<"Malloc "<< 5 * total_size * sizeof(float)/1024/1024
-             << "MB"<<std::endl;
-
-    checkCudaErrors(cudaMalloc((void **)&img,
-                            total_size * sizeof(float)));
-    checkCudaErrors(cudaMalloc((void **)&output,
-                            total_size * sizeof(float)));
-    checkCudaErrors(cudaMallocHost((void **)&pin_img,
-                            total_size * sizeof(float)));
-    checkCudaErrors(cudaMallocHost((void **)&pin_output,
-                            total_size * sizeof(float)));
-
-    checkCudaErrors(cudaMalloc((void **)&coords,
-                        coords_size * sizeof(float)));
-    checkCudaErrors(cudaMallocHost((void **)&pin_coords,
-                        coords_size * sizeof(float)));
- 
-    dim3 threads(min(total_size, (long)512), 1, 1);
-    dim3 blocks(total_size/512 + 1, 1, 1);
-    set_coords_3D<<<blocks, threads, 0, stream>>>(coords, dim_z, dim_y, dim_x);
-    checkCudaErrors(cudaStreamSynchronize(stream));
 }
 
 void Handle::copy_input(float* input){
