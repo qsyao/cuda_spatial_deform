@@ -81,6 +81,17 @@ def test_2D():
         output = cuda_handle.augment(array_image)
     check(correct_ret, output[0])
 
+    # Save Image
+    name, image_type = data_pth.split('.')
+    for item in output[1]:
+        name += '_' + item
+    output_pth = name + '.' + image_type
+    out = Image.fromarray(output[0].transpose(1, 2, 0), mode=image.mode)
+    out = Image.fromarray(output[0].transpose(1, 2, 0).\
+                                    astype(raw.dtype), mode=image.mode)
+    out.save(output_pth)
+
+    # Test Time
     start = time.time()
     for i in range(Iters):
         output = cuda_handle.augment(array_image)
