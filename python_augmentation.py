@@ -34,7 +34,8 @@ def test_3D():
     array_image = sitk.GetArrayFromImage(sitk_image).copy()
 
     cuda_handle = Handle(array_image.shape)
-    cuda_handle.scale(0.5)
+    # cuda_handle.scale(0.5)
+    cuda_handle.flip(do_y=True, do_x=True, do_z=True)
     cuda_handle.end_flag()
 
     correct_ret = deform.spatial_augment(array_image)
@@ -66,7 +67,8 @@ def test_2D():
     array_image = array_image.transpose(2,0,1).astype(np.float32).copy()
 
     cuda_handle = Handle(array_image.shape, RGB=True)
-    cuda_handle.scale(0.5)
+    # cuda_handle.scale(0.5)
+    cuda_handle.flip(do_y=True)
     cuda_handle.end_flag()
 
     if len(array_image.shape) == 2:
@@ -79,8 +81,8 @@ def test_2D():
     # Warm up and Unit test
     for i in range(100):
         output = cuda_handle.augment(array_image)
-    check(correct_ret, output[0])
-
+    # check(correct_ret, output[0])
+   
     # Save Image
     name, image_type = data_pth.split('.')
     for item in output[1]:
@@ -90,6 +92,7 @@ def test_2D():
     out = Image.fromarray(output[0].transpose(1, 2, 0).\
                                     astype(raw.dtype), mode=image.mode)
     out.save(output_pth)
+    import ipdb; ipdb.set_trace()
 
     # Test Time
     start = time.time()
@@ -112,5 +115,5 @@ def test_2D():
                                     (end - start) * 1000 / Iters_CPU)) 
 
 if __name__ == "__main__":
-    # test_3D()
+    test_3D()
     test_2D()

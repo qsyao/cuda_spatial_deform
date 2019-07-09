@@ -68,6 +68,22 @@ void Handle::scale(float scale){
     device_apply_scale<<<blocks, threads, 0, stream>>>(coords, scale, coords_size);
 }
 
+void Handle::flip(int do_x, int do_y, int do_z){
+    if(is_3D){
+        dim3 threads(min(total_size, (long)512), 1, 1);
+        dim3 blocks(total_size/512 + 1, 1, 1);
+        flip_3D<<<blocks, threads, 0, stream>>>(coords, dim_z, dim_y, dim_x,
+                                                do_z, do_y, do_x);
+        checkCudaErrors(cudaStreamSynchronize(stream));
+    }
+    else{
+        dim3 threads(min(total_size, (long)512), 1, 1);
+        dim3 blocks(total_size/512 + 1, 1, 1);
+        flip_2D<<<blocks, threads, 0, stream>>>(coords, dim_y, dim_x, do_y, do_x);
+        checkCudaErrors(cudaStreamSynchronize(stream));
+    }
+}
+
 void Handle::set_3D(size_t z, size_t y, size_t x){
     is_3D = true;
     dim_x = x;

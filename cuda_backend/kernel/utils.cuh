@@ -38,6 +38,8 @@ public:
 
     void recenter();
 
+    void flip(int do_x, int do_y, int do_z=0);
+
     ~Handle(){
         checkCudaErrors(cudaFree(img));
         checkCudaErrors(cudaFree(output));

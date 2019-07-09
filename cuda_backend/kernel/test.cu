@@ -34,6 +34,10 @@ void cu_scale(Handle* cuda_handle, float scale){
     cuda_handle->scale(scale);
 }
 
+void cu_flip(Handle* cuda_handle, int do_x, int do_y, int do_z){
+    cuda_handle->flip(do_x, do_y, do_z);
+}
+
 void endding_flag(Handle* cuda_handle){
     cuda_handle->recenter();
 }

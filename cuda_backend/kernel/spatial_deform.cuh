@@ -12,4 +12,18 @@ __global__ void recenter_2D(float* coords, size_t dim_y, size_t dim_x);
 
 __global__ void recenter_3D(float* coords, size_t dim_z, size_t dim_y, size_t dim_x);
 
+__global__ void flip_2D(float* coords, 
+                        size_t dim_y, 
+                        size_t dim_x,
+                        int do_y,
+                        int do_x);
+
+__global__ void flip_3D(float* coords,
+                        size_t dim_z,
+                        size_t dim_y, 
+                        size_t dim_x,
+                        int do_z,
+                        int do_y,
+                        int do_x);                        
+
 #endif

@@ -26,6 +26,9 @@ scale.argtypes = [c_void_p, c_float]
 end_flag = lib.endding_flag
 end_flag.argtypes = [c_void_p]
 
+flip = lib.cu_flip
+flip.argtypes = [c_void_p, c_int, c_int, c_int]
+
 class Spatial_Deform(object):
     def __init__(self, prob=1.0):
         self.prob = prob
@@ -43,6 +46,27 @@ class Scale(Spatial_Deform):
     def defrom(self, handle):
         if np.random.uniform() < self.prob:
             scale(handle, self.sc)
+            return self.label
+        else:
+            return None
+
+def bool_to_int(flag):
+    if flag:
+        return 1
+    else:
+        return 0
+
+class Flip(Spatial_Deform):
+    def __init__(self, do_x=False, do_y=False, do_z=False, prob=1.0):
+        Spatial_Deform.__init__(self, prob)
+        self.label = 'Flip'
+        self.do_x = bool_to_int(do_x)
+        self.do_y = bool_to_int(do_y)
+        self.do_z = bool_to_int(do_z)
+    
+    def defrom(self, handle):
+        if np.random.uniform() < self.prob:
+            flip(handle, self.do_x, self.do_y, self.do_z)
             return self.label
         else:
             return None
@@ -81,6 +105,9 @@ class Handle(object):
             assert(img.shape == self.shape)
         output = np.ones(img.shape).astype(np.float32)
         labels = self.deform_coords()
+        
+        # check coords
+        self.get_coords()
 
         if not self.RGB:
             l_i(self.cuda_handle, output, img, 1)
@@ -95,6 +122,9 @@ class Handle(object):
 
     def scale(self, sc, prob=1.0):
         self.deform_list.append(Scale(sc, prob))
+    
+    def flip(self, do_x=False, do_y=False, do_z=False, prob=1.0):
+        self.deform_list.append(Flip(do_x, do_y, do_z, prob))
 
     def end_flag(self):
         self.deform_list.append(End_Flag())
@@ -104,6 +134,8 @@ class Handle(object):
         coords_shape.insert(0, 3 if self.is_3D else 2)
         coords = np.ones(coords_shape).astype(np.float32)
         check(self.cuda_handle, coords)
+        coords = coords.astype(np.int)
+        import ipdb; ipdb.set_trace()
         return coords
 
     def deform_coords(self):
