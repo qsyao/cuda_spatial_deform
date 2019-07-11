@@ -54,8 +54,9 @@ void endding_flag(Handle* cuda_handle){
     cuda_handle->recenter();
 }
 
-void test_elastic(Handle* cuda_handle, float* random){
-    cuda_handle->elastic(random);
+void cu_elastic(Handle* cuda_handle, float sigma, float alpha, float truncate,
+                                    int mode_type, float c_val){
+    cuda_handle->elastic(sigma, alpha, truncate, mode_type, c_val);
 }
 
 } // extern "C"

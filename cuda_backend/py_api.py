@@ -38,8 +38,8 @@ rotate_2D.argtypes = [c_void_p, c_float]
 rotate_3D = lib.cu_rotate_3D
 rotate_3D.argtypes = [c_void_p, ndpointer(np.float32)]
 
-test = lib.test_elastic
-test.argtypes = [c_void_p, ndpointer(np.float32)]
+elastic = lib.cu_elastic
+elastic.argtypes = [c_void_p, c_float, c_float, c_float, c_int, c_float]
 
 class Spatial_Deform(object):
     def __init__(self, prob=1.0):
@@ -132,6 +132,38 @@ class Rotate(Spatial_Deform):
         else:
             return None
 
+class Elastic(Spatial_Deform):
+    def __init__(self, sigma, alpha, mode='reflect', \
+                                    c_val=0, truncate=4.0, prob=1.0):
+        Spatial_Deform.__init__(self, prob)
+        self.label = 'Elastic'
+        self.sigma = sigma
+        self.alpha = alpha
+        self.c_val = c_val
+        self.truncate = truncate
+        type_mode = -1
+        if mode == 'constant':
+            type_mode = 0
+        elif mode == 'reflect':
+            type_mode = 1
+        elif mode == 'mirror':
+            type_mode = 2
+        elif mode == 'nearest':
+            type_mode = 3
+        elif mode == 'wrap':
+            type_mode = 4
+        else:
+            raise ValueError
+        self.type_mode = type_mode
+
+    def defrom(self, handle):
+        if np.random.uniform() < self.prob:
+            elastic(handle, self.sigma, self.alpha, self.truncate, self.type_mode, self.c_val)
+            return self.label
+        else:
+            return None
+
+
 class End_Flag(Spatial_Deform):
     def __init__(self, prob=1.0):
         Spatial_Deform.__init__(self, prob)
@@ -208,12 +240,8 @@ class Handle(object):
     def rotate(self, angel_x=0, angle_y=0, angle_z=0, prob=1.0):
         self.deform_list.append(Rotate(not self.is_3D, angel_x, angle_y, angle_z, prob))
 
-    def test(self):
-        random = np.ones(self.shape).astype(np.float32)
-        for i in range(10):
-            test(self.cuda_handle, random)
-            print(random)
-            import ipdb; ipdb.set_trace()
+    def elastic(self, sigma, alpha, mode='reflect', c_val=0, truncate=4.0, prob=1.0):
+        self.deform_list.append(Elastic(sigma, alpha, mode, c_val, truncate, prob))
 
     def end_flag(self):
         self.deform_list.append(End_Flag())

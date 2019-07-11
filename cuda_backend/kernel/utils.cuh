@@ -20,6 +20,10 @@ public:
         checkCudaErrors(cudaStreamCreate(&stream));
         checkCudaErrors(curandCreateGenerator(&gen, 
                        CURAND_RNG_PSEUDO_DEFAULT));
+        checkCudaErrors(cudaMalloc((void **)&kernel,
+                            1000 * sizeof(float)));
+        checkCudaErrors(cudaMallocHost((void **)&kernel_pin,
+                            1000 * sizeof(float)));
     }
 
     void set_2D(size_t y, size_t x);
@@ -50,7 +54,8 @@ public:
 
     void host_rotate_3D(float* rot_matrix);
 
-    void elastic(float* host_random);
+    void elastic(float sigma, float alpha, float truncate,
+                            int mode_type, float c_valm);
 
     ~Handle(){
         checkCudaErrors(cudaFree(img));
@@ -71,6 +76,8 @@ private:
     float* pin_output;
 
     float* random;
+    float* kernel;
+    float* kernel_pin;
 
     float* gpu_rot_matrix;
     float* coords;

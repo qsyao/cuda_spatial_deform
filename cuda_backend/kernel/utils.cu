@@ -155,13 +155,30 @@ void Handle::host_rotate_3D(float* rot_matrix){
     checkCudaErrors(cudaStreamSynchronize(stream));    
 }
 
-void Handle::elastic(float* host_random){
+void Handle::elastic(float sigma, float alpha, float truncate,
+                                int mode_type, float c_valm){
     srand(time(NULL));
     int seed = rand();
     checkCudaErrors(curandSetPseudoRandomGeneratorSeed(gen, seed));
     checkCudaErrors(curandGenerateUniform(gen, random, total_size));
-    checkCudaErrors(cudaMemcpy(host_random, random, total_size * sizeof(float),
-                                       cudaMemcpyDeviceToHost));
+    // make the radius of the filter equal to truncate standard deviations
+    int lw = int(sigma * truncate + 0.5);
+    float sigma2 = sigma * sigma;
+    // generate kernel
+    float total = 0;
+    for(int i = -lw; i < lw + 1; i++){
+        kernel_pin[i + lw] = exp(i * i * -0.5 / sigma2);
+        total += kernel_pin[i + lw];
+    }
+    for(int i = -lw; i < lw + 1; i++){
+        kernel_pin[i + lw] = kernel_pin[i + lw] / total;
+    }
+    // Copy kernel
+    checkCudaErrors(cudaMemcpyAsync(kernel, 
+                                    kernel_pin, 
+                                    (2 * lw + 1) * sizeof(float),
+                                    cudaMemcpyHostToDevice,
+                                    stream));
 }
 
 void Handle::translate(float seg_x, float seg_y, float seg_z){

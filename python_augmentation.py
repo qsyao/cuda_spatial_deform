@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from cuda_backend.py_api import Handle
 import deform
 
-Iters = 1000
+Iters = 100
 Iters_CPU = 10
 
 def create_zero_centered_coordinate_mesh(shape):
@@ -46,7 +46,7 @@ def test_3D():
     # cuda_handle.scale(0.5)
     # cuda_handle.flip(do_y=True, do_x=True, do_z=True)
     # cuda_handle.translate(100, 100, 20)
-    cuda_handle.rotate(0.75 * np.pi, 0.75 * np.pi, 0.75 * np.pi)
+    # cuda_handle.rotate(0.75 * np.pi, 0.75 * np.pi, 0.75 * np.pi)
     cuda_handle.end_flag()
 
     correct_ret = deform.spatial_augment(array_image, mode="constant")
@@ -81,7 +81,8 @@ def test_2D():
     # cuda_handle.scale(0.5)
     # cuda_handle.flip(do_y=True)
     # cuda_handle.translate(400, 400)
-    cuda_handle.rotate(0.75 * np.pi)
+    # cuda_handle.rotate(0.75 * np.pi)
+    cuda_handle.elastic(sigma=12., alpha=500.)
     cuda_handle.end_flag()
 
     # if len(array_image.shape) == 2:
@@ -106,7 +107,7 @@ def test_2D():
     out = Image.fromarray(output[0].transpose(1, 2, 0).\
                                     astype(raw.dtype), mode=image.mode)
     out.save(output_pth)
-    import ipdb; ipdb.set_trace()
+    # import ipdb; ipdb.set_trace()
 
     # Test Time
     start = time.time()
@@ -116,18 +117,18 @@ def test_2D():
     print("Shape:{} Augmentation On CUDA Cost {}ms".format(array_image.shape, \
                                     (end - start) * 1000 / Iters))
 
-    start = time.time()
-    for i in range(Iters_CPU):
-        if len(array_image.shape) == 2:
-            correct_ret = deform.spatial_augment(array_image)
-        else:
-            correct_ret = np.zeros_like(array_image)
-            for i in range(3):
-                correct_ret[i] = deform.spatial_augment(array_image[i])
-    end = time.time()
-    print("Shape:{} Augmentation On CPU Cost {}ms".format(array_image.shape, \
-                                    (end - start) * 1000 / Iters_CPU)) 
+    # start = time.time()
+    # for i in range(Iters_CPU):
+    #     if len(array_image.shape) == 2:
+    #         correct_ret = deform.spatial_augment(array_image)
+    #     else:
+    #         correct_ret = np.zeros_like(array_image)
+    #         for i in range(3):
+    #             correct_ret[i] = deform.spatial_augment(array_image[i])
+    # end = time.time()
+    # print("Shape:{} Augmentation On CPU Cost {}ms".format(array_image.shape, \
+    #                                 (end - start) * 1000 / Iters_CPU)) 
 
 if __name__ == "__main__":
-    test_3D()
-    # test_2D()
+    # test_3D()
+    test_2D()
