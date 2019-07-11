@@ -7,11 +7,11 @@ lib_dir = os.path.abspath(os.path.dirname(__file__))
 lib = CDLL(lib_dir + "/libcudaAugmentation.so", RTLD_GLOBAL)
 
 init_2D = lib.init_2D_handle
-init_2D.argtypes = [c_int, c_int]
+init_2D.argtypes = [c_int, c_int, c_int, c_float]
 init_2D.restype = c_void_p
 
 init_3D = lib.init_3D_handle
-init_3D.argtypes = [c_int, c_int, c_int]
+init_3D.argtypes = [c_int, c_int, c_int, c_int, c_float]
 init_3D.restype = c_void_p
 
 l_i = lib.linear_interpolate
@@ -37,6 +37,9 @@ rotate_2D.argtypes = [c_void_p, c_float]
 
 rotate_3D = lib.cu_rotate_3D
 rotate_3D.argtypes = [c_void_p, ndpointer(np.float32)]
+
+test = lib.test_elastic
+test.argtypes = [c_void_p, ndpointer(np.float32)]
 
 class Spatial_Deform(object):
     def __init__(self, prob=1.0):
@@ -138,7 +141,7 @@ class End_Flag(Spatial_Deform):
         return None
 
 class Handle(object):
-    def __init__(self, shape, RGB=False):
+    def __init__(self, shape, RGB=False, mode='constant', cval=0.0):
         self.RGB = RGB
         self.shape = shape
         if self.RGB:
@@ -148,12 +151,27 @@ class Handle(object):
 
         if(len(shape) != 2 and len(shape) != 3):
             raise ValueError
+        
+        type_mode = -1
+        if mode == 'constant':
+            type_mode = 0
+        elif mode == 'reflect':
+            type_mode = 1
+        elif mode == 'mirror':
+            type_mode = 2
+        elif mode == 'nearest':
+            type_mode = 3
+        elif mode == 'wrap':
+            type_mode = 4
+        else:
+            raise ValueError
+
         if(len(shape) == 2 or RGB):
-            self.cuda_handle = init_2D(self.shape[0], self.shape[1])
+            self.cuda_handle = init_2D(self.shape[0], self.shape[1], type_mode, float(cval))
             self.is_3D = False
         else:
             self.is_3D = True
-            self.cuda_handle = init_3D(shape[0], shape[1],  shape[2])
+            self.cuda_handle = init_3D(shape[0], shape[1],  shape[2], type_mode, float(cval))
     
     def augment(self, img):
         if self.RGB:
@@ -189,6 +207,13 @@ class Handle(object):
     
     def rotate(self, angel_x=0, angle_y=0, angle_z=0, prob=1.0):
         self.deform_list.append(Rotate(not self.is_3D, angel_x, angle_y, angle_z, prob))
+
+    def test(self):
+        random = np.ones(self.shape).astype(np.float32)
+        for i in range(10):
+            test(self.cuda_handle, random)
+            print(random)
+            import ipdb; ipdb.set_trace()
 
     def end_flag(self):
         self.deform_list.append(End_Flag())

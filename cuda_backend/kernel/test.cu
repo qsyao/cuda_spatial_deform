@@ -2,14 +2,14 @@
 
 extern "C" {
 
-Handle* init_2D_handle(size_t y, size_t x){
-    Handle *ret = new Handle();
+Handle* init_2D_handle(size_t y, size_t x, int mode_type, float c_val){
+    Handle *ret = new Handle(mode_type, c_val);
     ret->set_2D(y, x);
     return ret;
 }
 
-Handle* init_3D_handle(size_t z, size_t y, size_t x){
-    Handle *ret = new Handle();
+Handle* init_3D_handle(size_t z, size_t y, size_t x, int mode_type, float c_val){
+    Handle *ret = new Handle(mode_type, c_val);
     ret->set_3D(z, y, x);
     return ret;
 }
@@ -52,6 +52,10 @@ void cu_rotate_2D(Handle* cuda_handle, float angle){
 
 void endding_flag(Handle* cuda_handle){
     cuda_handle->recenter();
+}
+
+void test_elastic(Handle* cuda_handle, float* random){
+    cuda_handle->elastic(random);
 }
 
 } // extern "C"

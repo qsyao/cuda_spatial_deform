@@ -14,10 +14,10 @@ add_definitions(-DHAVE_CUDA)
 
 include_directories(${CUDA_TOOLKIT_ROOT_DIR}/samples/common/inc/)
 
-message("warning: helper headers locate at ")
-message(${CUDA_TOOLKIT_ROOT_DIR}/samples/common/inc/)
+message("warning: CUDA_TOOLKIT_ROOT_DIR: ")
+message(${CUDA_TOOLKIT_ROOT_DIR})
 
-list(APPEND cudaAugmentation_EXTERNAL_LIBRARIES ${CUDA_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES})
+list(APPEND cudaAugmentation_EXTERNAL_LIBRARIES ${CUDA_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CUDA_curand_LIBRARY})
 include_directories(${CUDA_INCLUDE_DIRS})
 
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};--expt-relaxed-constexpr)
@@ -33,8 +33,9 @@ set(SOURCE_FILES
         kernel/utils.cu
         kernel/spatial_deform.cu
         kernel/interpolate.cu
-        kernel/ops_copy.cu)
+        kernel/ops_copy.cu
+        kernel/mode_index.cu)
 
 cuda_add_library(cudaAugmentation SHARED ${SOURCE_FILES})
-target_link_libraries(cudaAugmentation ${cudaBERT_EXTERNAL_LIBRARIES})
+target_link_libraries(cudaAugmentation ${cudaAugmentation_EXTERNAL_LIBRARIES})
 

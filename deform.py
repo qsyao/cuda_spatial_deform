@@ -55,6 +55,7 @@ def rotate_coords_3d(coords, angle_x, angle_y, angle_z):
     return coords
 
 def elastic_deform_coordinates(coordinates, alpha, sigma):
+    import ipdb; ipdb.set_trace()
     n_dim = len(coordinates)
     offsets = []
     for _ in range(n_dim):
@@ -64,11 +65,12 @@ def elastic_deform_coordinates(coordinates, alpha, sigma):
     indices = offsets + coordinates
     return indices
 
-def spatial_augment(img, RGB=False, do_scale=True, scale=0.5, angle=0.75*np.pi):
+def spatial_augment(img, RGB=False, do_scale=True, scale=0.5, angle=0.75*np.pi, mode="constant"):
     coords = create_zero_centered_coordinate_mesh(img.shape)
 
     # coords = scale_coords(coords, scale)
     coords = rotate_coords_3d(coords, angle, angle, angle)
+    # coords = elastic_deform_coordinates(coords, 500, 12)
 
     for d in range(len(img.shape)):
         ctr = float(np.round(img.shape[d] / 2.))
@@ -76,13 +78,13 @@ def spatial_augment(img, RGB=False, do_scale=True, scale=0.5, angle=0.75*np.pi):
 
     if not RGB:
         ret = map_coordinates(img, coords, order=1, \
-                    mode='constant', cval=0.0).astype(img.dtype)
+                    mode=mode).astype(img.dtype)
     else:
         assert(img.shape[0] == 3)
         ret = np.zeros_like(array_image)
         for i in range(3):
             ret[i] = map_coordinates(img[i], coords, order=1, \
-                    mode='constant', cval=0.0).astype(img.dtype)
+                    mode=mode).astype(img.dtype)
     
     return ret
     

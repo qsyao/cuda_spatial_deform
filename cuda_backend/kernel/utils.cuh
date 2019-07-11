@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <cuda.h>
+#include "curand.h"
 #include <cuda_runtime.h>
 #include <helper_functions.h>
 #include <helper_cuda.h>
@@ -14,8 +15,11 @@ extern "C"{
 
 class Handle {
 public:
-    Handle() : batchsize(1), dim_x(1), dim_y(1), dim_z(1){
+    Handle(int mode_type, float c_val) : batchsize(1), dim_x(1), dim_y(1),
+                 dim_z(1), mode_type(mode_type), c_val(c_val){
         checkCudaErrors(cudaStreamCreate(&stream));
+        checkCudaErrors(curandCreateGenerator(&gen, 
+                       CURAND_RNG_PSEUDO_DEFAULT));
     }
 
     void set_2D(size_t y, size_t x);
@@ -46,6 +50,8 @@ public:
 
     void host_rotate_3D(float* rot_matrix);
 
+    void elastic(float* host_random);
+
     ~Handle(){
         checkCudaErrors(cudaFree(img));
         checkCudaErrors(cudaFree(output));
@@ -64,11 +70,18 @@ private:
     float* pin_img;
     float* pin_output;
 
+    float* random;
+
     float* gpu_rot_matrix;
     float* coords;
     float* pin_coords;
 
+    int mode_type;
+    float c_val;
+
     cudaStream_t stream;
+
+    curandGenerator_t gen;
 };
     
 }

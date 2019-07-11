@@ -1,9 +1,12 @@
 #include "utils.cuh"
+
+#include <math.h>
+#include <time.h>
+#include <stdlib.h>
+
 #include "ops_copy.cuh"
 #include "spatial_deform.cuh"
 #include "interpolate.cuh"
-
-#include <math.h>
 
 __global__ void set_coords_2D(float* coords, size_t y, size_t x){
     size_t index = blockIdx.x * blockDim.x + threadIdx.x;
@@ -40,7 +43,7 @@ void Handle::set_2D(size_t y, size_t x){
              <<" dim_x : "<<dim_x
              <<" dim_y : "<<dim_y
              <<" total : "<<total_size<<std::endl;
-    std::cout<<"Malloc "<< 4 * total_size * sizeof(float)/1024/1024
+    std::cout<<"Malloc "<< 5 * total_size * sizeof(float)/1024/1024
              << "MB"<<std::endl;
 
     checkCudaErrors(cudaMalloc((void **)&img,
@@ -51,6 +54,9 @@ void Handle::set_2D(size_t y, size_t x){
                             total_size * sizeof(float)));
     checkCudaErrors(cudaMallocHost((void **)&pin_output,
                             total_size * sizeof(float)));
+   
+    checkCudaErrors(cudaMalloc((void **)&random,
+                            total_size * sizeof(float)));     
 
     checkCudaErrors(cudaMalloc((void **)&coords,
                         coords_size * sizeof(float)));    
@@ -77,7 +83,7 @@ void Handle::set_3D(size_t z, size_t y, size_t x){
              <<" dim_z : "<<dim_z
              <<" total : "<<total_size<<std::endl;
 
-    std::cout<<"Malloc "<< 5 * total_size * sizeof(float)/1024/1024
+    std::cout<<"Malloc "<< 6 * total_size * sizeof(float)/1024/1024
              << "MB"<<std::endl;
 
     checkCudaErrors(cudaMalloc((void **)&gpu_rot_matrix, 9 * sizeof(float)));
@@ -90,6 +96,9 @@ void Handle::set_3D(size_t z, size_t y, size_t x){
                             total_size * sizeof(float)));
     checkCudaErrors(cudaMallocHost((void **)&pin_output,
                             total_size * sizeof(float)));
+
+    checkCudaErrors(cudaMalloc((void **)&random,
+                            total_size * sizeof(float)));      
 
     checkCudaErrors(cudaMalloc((void **)&coords,
                         coords_size * sizeof(float)));
@@ -146,6 +155,15 @@ void Handle::host_rotate_3D(float* rot_matrix){
     checkCudaErrors(cudaStreamSynchronize(stream));    
 }
 
+void Handle::elastic(float* host_random){
+    srand(time(NULL));
+    int seed = rand();
+    checkCudaErrors(curandSetPseudoRandomGeneratorSeed(gen, seed));
+    checkCudaErrors(curandGenerateUniform(gen, random, total_size));
+    checkCudaErrors(cudaMemcpy(host_random, random, total_size * sizeof(float),
+                                       cudaMemcpyDeviceToHost));
+}
+
 void Handle::translate(float seg_x, float seg_y, float seg_z){
     if(is_3D){
         dim3 threads(min(total_size, (long)512), 1, 1);
@@ -192,11 +210,11 @@ void Handle::interpolate_linear(){
 
     if(is_3D){
         linear_interplate_3D<<<blocks, threads, 0, stream>>>(coords, img, output,
-                                                            dim_z, dim_y, dim_x);
+                                                            dim_z, dim_y, dim_x, mode_type, c_val);
     }
     else{
         linear_interplate_2D<<<blocks, threads, 0, stream>>>(coords, img, output,
-                                                             dim_y, dim_x);
+                                                             dim_y, dim_x, mode_type, c_val);
     }
 }
 
