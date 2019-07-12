@@ -256,3 +256,6 @@ class Handle(object):
             if out_label is not None:
                 labels.append(out_label)
         return labels
+    
+    def reset(self):
+        self.deform_list.clear()
