@@ -30,7 +30,7 @@ CPU | 304 | 1821
 ### CMake
 ```shell
 cd cuda_backend
-cmake -D /path/to/cuda .
+cmake -D CUDA_TOOLKIT_ROOT_DIR=/path/to/cuda .
 make -j8
 ```
 
