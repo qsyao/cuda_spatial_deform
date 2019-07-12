@@ -1,6 +1,6 @@
 # Cuda_Spatial_Deform
 
-A fast tool to do image augmentation on GPU, can be helpful to research on Medical Image.
+A fast tool to do image augmentation on GPU(especially elastic deform), can be helpful to research on Medical Image.
 
 ## Motivation
 - When the size of image is too large, it will take a lot of time(much more than forward and backward computation like U_Net), especially for 3D image(like CT).
