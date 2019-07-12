@@ -2,14 +2,14 @@
 
 extern "C" {
 
-Handle* init_2D_handle(size_t y, size_t x, int mode_type, float c_val){
-    Handle *ret = new Handle(mode_type, c_val);
+Handle* init_2D_handle(size_t y, size_t x, int mode_type, float c_val, int id_gpu){
+    Handle *ret = new Handle(mode_type, c_val, id_gpu);
     ret->set_2D(y, x);
     return ret;
 }
 
-Handle* init_3D_handle(size_t z, size_t y, size_t x, int mode_type, float c_val){
-    Handle *ret = new Handle(mode_type, c_val);
+Handle* init_3D_handle(size_t z, size_t y, size_t x, int mode_type, float c_val, int id_gpu){
+    Handle *ret = new Handle(mode_type, c_val, id_gpu);
     ret->set_3D(z, y, x);
     return ret;
 }

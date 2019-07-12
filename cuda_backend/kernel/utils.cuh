@@ -18,8 +18,9 @@ extern "C"{
 
 class Handle {
 public:
-    Handle(int mode_type, float c_val) : batchsize(1), dim_x(1), dim_y(1),
+    Handle(int mode_type, float c_val, int id_gpu) : batchsize(1), dim_x(1), dim_y(1),
                  dim_z(1), mode_type(mode_type), c_val(c_val){
+        checkCudaErrors(cudaSetDevice(id_gpu));
         checkCudaErrors(cudaStreamCreate(&stream));
         checkCudaErrors(curandCreateGenerator(&gen, 
                        CURAND_RNG_PSEUDO_DEFAULT));

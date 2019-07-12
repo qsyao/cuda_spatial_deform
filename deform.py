@@ -1,3 +1,6 @@
+'''
+Reference to https://github.com/MIC-DKFZ/batchgenerators
+'''
 
 import numpy as np
 import SimpleITK as sitk
@@ -68,8 +71,8 @@ def spatial_augment(img, RGB=False, do_scale=True, scale=0.5, angle=0.75*np.pi, 
     coords = create_zero_centered_coordinate_mesh(img.shape)
 
     # coords = scale_coords(coords, scale)
-    # coords = rotate_coords_3d(coords, angle, angle, angle)
-    coords = elastic_deform_coordinates(coords, 500, 12)
+    coords = rotate_coords_3d(coords, angle, angle, angle)
+    # coords = elastic_deform_coordinates(coords, 500, 12)
 
     for d in range(len(img.shape)):
         ctr = float(np.round(img.shape[d] / 2.))

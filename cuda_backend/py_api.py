@@ -7,11 +7,11 @@ lib_dir = os.path.abspath(os.path.dirname(__file__))
 lib = CDLL(lib_dir + "/libcudaAugmentation.so", RTLD_GLOBAL)
 
 init_2D = lib.init_2D_handle
-init_2D.argtypes = [c_int, c_int, c_int, c_float]
+init_2D.argtypes = [c_int, c_int, c_int, c_float, c_int]
 init_2D.restype = c_void_p
 
 init_3D = lib.init_3D_handle
-init_3D.argtypes = [c_int, c_int, c_int, c_int, c_float]
+init_3D.argtypes = [c_int, c_int, c_int, c_int, c_float, c_int]
 init_3D.restype = c_void_p
 
 l_i = lib.linear_interpolate
@@ -167,7 +167,7 @@ class End_Flag(Spatial_Deform):
         return None
 
 class Handle(object):
-    def __init__(self, shape, RGB=False, mode='constant', cval=0.0):
+    def __init__(self, shape, RGB=False, mode='constant', cval=0.0, id_gpu=0):
         self.RGB = RGB
         self.shape = shape
         if self.RGB:
@@ -193,11 +193,11 @@ class Handle(object):
             raise ValueError
 
         if(len(shape) == 2 or RGB):
-            self.cuda_handle = init_2D(self.shape[0], self.shape[1], type_mode, float(cval))
+            self.cuda_handle = init_2D(self.shape[0], self.shape[1], type_mode, float(cval), id_gpu)
             self.is_3D = False
         else:
             self.is_3D = True
-            self.cuda_handle = init_3D(shape[0], shape[1],  shape[2], type_mode, float(cval))
+            self.cuda_handle = init_3D(shape[0], shape[1],  shape[2], type_mode, float(cval), id_gpu)
     
     def augment(self, img):
         if self.RGB:

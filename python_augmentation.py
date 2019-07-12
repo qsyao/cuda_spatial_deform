@@ -12,13 +12,6 @@ Iters_CPU = 10
  
 np.set_printoptions(precision=3)
 
-def create_zero_centered_coordinate_mesh(shape):
-    tmp = tuple([np.arange(i) for i in shape])
-    coords = np.array(np.meshgrid(*tmp, indexing='ij')).astype(float)
-    for d in range(len(shape)):
-        coords[d] -= ((np.array(shape).astype(float)) / 2.)[d]
-    return coords
-
 def check(correct, output):
     '''
     Unit Test Pass When less than 0.01 rate pixels loss ( > 0.001)
