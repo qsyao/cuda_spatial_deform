@@ -1,4 +1,4 @@
-data/
+
 cuda_backend/Makefile
 cuda_backend/CMakeCache.txt
 cuda_backend/CMakeFiles/
