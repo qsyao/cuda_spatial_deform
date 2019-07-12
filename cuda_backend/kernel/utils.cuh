@@ -4,6 +4,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <math.h>
+#include <time.h>
+#include <stdlib.h>
 
 #include <cuda.h>
 #include "curand.h"
@@ -24,6 +27,9 @@ public:
                             1000 * sizeof(float)));
         checkCudaErrors(cudaMallocHost((void **)&kernel_pin,
                             1000 * sizeof(float)));
+        srand(time(NULL));
+        int seed = rand();
+        checkCudaErrors(curandSetPseudoRandomGeneratorSeed(gen, seed));
     }
 
     void set_2D(size_t y, size_t x);

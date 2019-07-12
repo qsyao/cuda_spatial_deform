@@ -52,5 +52,36 @@ __global__ void rotate_3D(float* coords,
                         size_t dim_y, 
                         size_t dim_x,
                         float* rot_matrix);
+ 
+__global__ void gussain_filter_x(float* random,
+                                float* kernel, 
+                                int lw,
+                                size_t dim_z,
+                                size_t dim_y,
+                                size_t dim_x,
+                                int mode,
+                                float cval);
 
+__global__ void gussain_filter_z(float* random,
+                                float* kernel, 
+                                int lw,
+                                size_t dim_z,
+                                size_t dim_y,
+                                size_t dim_x,
+                                int mode,
+                                float cval);
+
+__global__ void gussain_filter_y(float* random,
+                                float* kernel, 
+                                int lw,
+                                size_t dim_z,
+                                size_t dim_y,
+                                size_t dim_x,
+                                int mode,
+                                float cval);                                
+
+__global__ void plus_offsets(float *coords, float *random,  size_t total_size, float alpha);
+
+__global__ void scale_random(float *random, size_t total_size);
+                                
 #endif

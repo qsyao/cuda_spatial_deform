@@ -33,8 +33,7 @@ set(SOURCE_FILES
         kernel/utils.cu
         kernel/spatial_deform.cu
         kernel/interpolate.cu
-        kernel/ops_copy.cu
-        kernel/mode_index.cu)
+        kernel/ops_copy.cu)
 
 cuda_add_library(cudaAugmentation SHARED ${SOURCE_FILES})
 target_link_libraries(cudaAugmentation ${cudaAugmentation_EXTERNAL_LIBRARIES})

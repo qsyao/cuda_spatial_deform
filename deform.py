@@ -55,7 +55,6 @@ def rotate_coords_3d(coords, angle_x, angle_y, angle_z):
     return coords
 
 def elastic_deform_coordinates(coordinates, alpha, sigma):
-    import ipdb; ipdb.set_trace()
     n_dim = len(coordinates)
     offsets = []
     for _ in range(n_dim):

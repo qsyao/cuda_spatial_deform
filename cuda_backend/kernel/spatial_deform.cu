@@ -1,4 +1,4 @@
-#include "ops_copy.cuh"
+#include "spatial_deform.cuh"
 
 __global__ void device_apply_scale(float* coords, float scale, size_t total_size){
     for(size_t i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -162,3 +162,167 @@ __global__ void rotate_3D(float* coords,
         __syncthreads();
     }
 }
+
+__device__ __forceinline__ int mirror(int index, int len){
+    int s2 = 2 * len - 2;
+    if(index < 0){
+        index = s2 * (-index / s2) + index;
+        return index <= 1 - len ? index + s2 : -index;
+    }
+    if(index >= len){
+        index -= s2 * (index / s2);
+        if(index >= len) 
+            index = s2 - index;
+        return index;
+    }
+    return index;
+}
+
+__global__ void scale_random(float *random, size_t total_size){
+    size_t index = blockIdx.x * blockDim.x + threadIdx.x;
+    if(index < total_size){
+        random[index] = random[index] * 2.0 - 1.0;
+        __syncthreads();
+    }
+}
+
+__global__ void plus_offsets(float *coords, float *random, size_t total_size, float alpha){
+    size_t index = blockIdx.x * blockDim.x + threadIdx.x;
+    if(index < total_size){
+        coords[index] += random[index] * alpha;
+        __syncthreads();
+    }
+}
+
+__global__ void gussain_filter_x(float* random,
+                                float* kernel, 
+                                int lw,
+                                size_t dim_z,
+                                size_t dim_y,
+                                size_t dim_x,
+                                int mode,
+                                float cval){
+    size_t index = blockIdx.x * blockDim.x + threadIdx.x;
+    size_t total = dim_x * dim_y * dim_z;
+    size_t total_xy = dim_x * dim_y;
+    size_t id_x = index % dim_x;
+    size_t id_y = (index / dim_x) % dim_y;
+    size_t id_z = (index / total_xy) % dim_z;
+    size_t id_block = index / total;
+    int id;
+    float new_pixel = 0;
+    if(index < total * 2){
+        if(mode == 0){
+            for(int i = -lw; i < lw + 1; i++){
+                id = id_x + i;
+                if(id < 0 || id > dim_x - 1)
+                    new_pixel += cval * kernel[i+lw];
+                else new_pixel += kernel[i+lw] * 
+                        random[id_block * total + id_z * total_xy + id_y * dim_x + id];
+            }
+            __syncthreads();
+            random[index] = new_pixel;
+            __syncthreads();
+        }
+        else{
+            for(int i = -lw; i < lw + 1; i++){
+                id = id_x + i;
+                id = mirror(id, dim_x);
+                new_pixel += kernel[i+lw] * 
+                       random[id_block * total + id_z * total_xy + id_y * dim_x + id];
+            }
+            __syncthreads();
+            random[index] = new_pixel;
+            __syncthreads();   
+        }
+    }
+}
+
+__global__ void gussain_filter_y(float* random,
+                                float* kernel, 
+                                int lw,
+                                size_t dim_z,
+                                size_t dim_y,
+                                size_t dim_x,
+                                int mode,
+                                float cval){
+    size_t index = blockIdx.x * blockDim.x + threadIdx.x;
+    size_t total = dim_x * dim_y * dim_z;
+    size_t total_xy = dim_x * dim_y;
+    size_t id_x = index % dim_x;
+    size_t id_y = (index / dim_x) % dim_y;
+    size_t id_z = (index / total_xy) % dim_z;
+    size_t id_block = index / total;
+    int id;
+    float new_pixel = 0;
+    if(index < total * 2){
+        if(mode == 0){
+            for(int i = -lw; i < lw + 1; i++){
+                id = id_y + i;
+                if(id < 0 || id > dim_y - 1)
+                    new_pixel += cval * kernel[i+lw];
+                else new_pixel += kernel[i+lw] * 
+                        random[id_block * total + id_z * total_xy + id * dim_x + id_x];
+            }
+            __syncthreads();
+            random[index] = new_pixel;
+            __syncthreads();
+        }
+        else{
+            for(int i = -lw; i < lw + 1; i++){
+                id = id_y + i;
+                id = mirror(id, id_y);
+                new_pixel += kernel[i+lw] * 
+                       random[id_block * total + id_z * total_xy + id * dim_x + id_x];
+            }
+            __syncthreads();
+            random[index] = new_pixel;
+            __syncthreads();   
+        }
+    }
+}
+
+__global__ void gussain_filter_z(float* random,
+                                float* kernel, 
+                                int lw,
+                                size_t dim_z,
+                                size_t dim_y,
+                                size_t dim_x,
+                                int mode,
+                                float cval){
+    size_t index = blockIdx.x * blockDim.x + threadIdx.x;
+    size_t total = dim_x * dim_y * dim_z;
+    size_t total_xy = dim_x * dim_y;
+    size_t id_x = index % dim_x;
+    size_t id_y = (index / dim_x) % dim_y;
+    size_t id_z = (index / total_xy) % dim_z;
+    size_t id_block = index / total;
+    int id;
+    float new_pixel = 0;
+    if(index < total * 2){
+        if(mode == 0){
+            for(int i = -lw; i < lw + 1; i++){
+                id = id_z + i;
+                if(id < 0 || id > id_z - 1)
+                    new_pixel += cval * kernel[i+lw];
+                else new_pixel += kernel[i+lw] * 
+                        random[id_block * total + id * total_xy + id_y * dim_x + id_x];
+            }
+            __syncthreads();
+            random[index] = new_pixel;
+            __syncthreads();
+        }
+        else{
+            for(int i = -lw; i < lw + 1; i++){
+                id = id_z + i;
+                id = mirror(id, id_z);
+                new_pixel += kernel[i+lw] * 
+                       random[id_block * total + id * total_xy + id_y * dim_x + id_x];
+            }
+            __syncthreads();
+            random[index] = new_pixel;
+            __syncthreads();   
+        }
+    }
+}
+

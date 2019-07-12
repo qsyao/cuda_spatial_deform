@@ -144,14 +144,8 @@ class Elastic(Spatial_Deform):
         type_mode = -1
         if mode == 'constant':
             type_mode = 0
-        elif mode == 'reflect':
-            type_mode = 1
         elif mode == 'mirror':
-            type_mode = 2
-        elif mode == 'nearest':
-            type_mode = 3
-        elif mode == 'wrap':
-            type_mode = 4
+            type_mode = 1
         else:
             raise ValueError
         self.type_mode = type_mode
@@ -251,7 +245,7 @@ class Handle(object):
         coords_shape.insert(0, 3 if self.is_3D else 2)
         coords = np.ones(coords_shape).astype(np.float32)
         check(self.cuda_handle, coords)
-        coords = coords.astype(np.int)
+        # coords = coords.astype(np.int)
         import ipdb; ipdb.set_trace()
         return coords
 

@@ -7,8 +7,10 @@ import matplotlib.pyplot as plt
 from cuda_backend.py_api import Handle
 import deform
 
-Iters = 100
+Iters = 500
 Iters_CPU = 10
+ 
+np.set_printoptions(precision=3)
 
 def create_zero_centered_coordinate_mesh(shape):
     tmp = tuple([np.arange(i) for i in shape])
@@ -47,13 +49,14 @@ def test_3D():
     # cuda_handle.flip(do_y=True, do_x=True, do_z=True)
     # cuda_handle.translate(100, 100, 20)
     # cuda_handle.rotate(0.75 * np.pi, 0.75 * np.pi, 0.75 * np.pi)
+    cuda_handle.elastic(sigma=12., alpha=200., mode='constant')
     cuda_handle.end_flag()
 
     correct_ret = deform.spatial_augment(array_image, mode="constant")
     # Warm up and Unit test
     for i in range(100):
         output = cuda_handle.augment(array_image)
-    check(correct_ret, output[0])
+    # check(correct_ret, output[0])
 
     start = time.time()
     for i in range(Iters):
@@ -77,12 +80,12 @@ def test_2D():
     raw = array_image
     array_image = array_image.transpose(2,0,1).astype(np.float32).copy()
 
-    cuda_handle = Handle(array_image.shape, RGB=True, mode='constant')
+    cuda_handle = Handle(array_image.shape, RGB=True, mode='reflect')
     # cuda_handle.scale(0.5)
     # cuda_handle.flip(do_y=True)
     # cuda_handle.translate(400, 400)
     # cuda_handle.rotate(0.75 * np.pi)
-    cuda_handle.elastic(sigma=12., alpha=500.)
+    cuda_handle.elastic(sigma=12., alpha=200., mode='constant')
     cuda_handle.end_flag()
 
     # if len(array_image.shape) == 2:
@@ -130,5 +133,5 @@ def test_2D():
     #                                 (end - start) * 1000 / Iters_CPU)) 
 
 if __name__ == "__main__":
-    # test_3D()
-    test_2D()
+    test_3D()
+    # test_2D()

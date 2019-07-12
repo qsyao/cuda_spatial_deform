@@ -1,9 +1,5 @@
 #include "utils.cuh"
 
-#include <math.h>
-#include <time.h>
-#include <stdlib.h>
-
 #include "ops_copy.cuh"
 #include "spatial_deform.cuh"
 #include "interpolate.cuh"
@@ -43,7 +39,7 @@ void Handle::set_2D(size_t y, size_t x){
              <<" dim_x : "<<dim_x
              <<" dim_y : "<<dim_y
              <<" total : "<<total_size<<std::endl;
-    std::cout<<"Malloc "<< 5 * total_size * sizeof(float)/1024/1024
+    std::cout<<"Malloc "<< 6 * total_size * sizeof(float)/1024/1024
              << "MB"<<std::endl;
 
     checkCudaErrors(cudaMalloc((void **)&img,
@@ -56,7 +52,7 @@ void Handle::set_2D(size_t y, size_t x){
                             total_size * sizeof(float)));
    
     checkCudaErrors(cudaMalloc((void **)&random,
-                            total_size * sizeof(float)));     
+                            coords_size * sizeof(float)));     
 
     checkCudaErrors(cudaMalloc((void **)&coords,
                         coords_size * sizeof(float)));    
@@ -83,7 +79,7 @@ void Handle::set_3D(size_t z, size_t y, size_t x){
              <<" dim_z : "<<dim_z
              <<" total : "<<total_size<<std::endl;
 
-    std::cout<<"Malloc "<< 6 * total_size * sizeof(float)/1024/1024
+    std::cout<<"Malloc "<< 8 * total_size * sizeof(float)/1024/1024
              << "MB"<<std::endl;
 
     checkCudaErrors(cudaMalloc((void **)&gpu_rot_matrix, 9 * sizeof(float)));
@@ -98,7 +94,7 @@ void Handle::set_3D(size_t z, size_t y, size_t x){
                             total_size * sizeof(float)));
 
     checkCudaErrors(cudaMalloc((void **)&random,
-                            total_size * sizeof(float)));      
+                            coords_size * sizeof(float)));      
 
     checkCudaErrors(cudaMalloc((void **)&coords,
                         coords_size * sizeof(float)));
@@ -156,11 +152,9 @@ void Handle::host_rotate_3D(float* rot_matrix){
 }
 
 void Handle::elastic(float sigma, float alpha, float truncate,
-                                int mode_type, float c_valm){
-    srand(time(NULL));
-    int seed = rand();
-    checkCudaErrors(curandSetPseudoRandomGeneratorSeed(gen, seed));
-    checkCudaErrors(curandGenerateUniform(gen, random, total_size));
+                                int mode_type, float c_val){
+    // generate random offset by coords.size
+    checkCudaErrors(curandGenerateUniform(gen, random, coords_size));
     // make the radius of the filter equal to truncate standard deviations
     int lw = int(sigma * truncate + 0.5);
     float sigma2 = sigma * sigma;
@@ -173,12 +167,43 @@ void Handle::elastic(float sigma, float alpha, float truncate,
     for(int i = -lw; i < lw + 1; i++){
         kernel_pin[i + lw] = kernel_pin[i + lw] / total;
     }
+
     // Copy kernel
     checkCudaErrors(cudaMemcpyAsync(kernel, 
                                     kernel_pin, 
                                     (2 * lw + 1) * sizeof(float),
                                     cudaMemcpyHostToDevice,
                                     stream));
+    checkCudaErrors(cudaStreamSynchronize(stream));
+    
+    if(is_3D){
+        dim3 threads(min(coords_size, (long)512), 1, 1);
+        dim3 blocks(coords_size/512 + 1, 1, 1);
+        scale_random<<<blocks, threads, 0, stream>>>(random, coords_size);
+
+        gussain_filter_x<<<blocks, threads, 0, stream>>>(random, kernel, lw, dim_z,
+                                                    dim_y, dim_x, mode_type, c_val);
+        gussain_filter_y<<<blocks, threads, 0, stream>>>(random, kernel, lw, dim_z,
+                                                    dim_y, dim_x, mode_type, c_val);
+        gussain_filter_z<<<blocks, threads, 0, stream>>>(random, kernel, lw, dim_z,
+                                                    dim_y, dim_x, mode_type, c_val);
+
+        plus_offsets<<<blocks, threads, 0, stream>>>(coords, random, coords_size, alpha);
+        checkCudaErrors(cudaStreamSynchronize(stream));
+    }
+    else{
+        dim3 threads(min(coords_size, (long)512), 1, 1);
+        dim3 blocks(coords_size/512 + 1, 1, 1);
+        scale_random<<<blocks, threads, 0, stream>>>(random, coords_size);
+
+        gussain_filter_x<<<blocks, threads, 0, stream>>>(random, kernel, lw, 1,
+                                                    dim_y, dim_x, mode_type, c_val);
+        gussain_filter_y<<<blocks, threads, 0, stream>>>(random, kernel, lw, 1,
+                                                    dim_y, dim_x, mode_type, c_val);
+
+        plus_offsets<<<blocks, threads, 0, stream>>>(coords, random, coords_size, alpha);
+        checkCudaErrors(cudaStreamSynchronize(stream));
+    }
 }
 
 void Handle::translate(float seg_x, float seg_y, float seg_z){
