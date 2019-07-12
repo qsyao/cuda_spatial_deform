@@ -234,7 +234,7 @@ class Handle(object):
     def rotate(self, angel_x=0, angle_y=0, angle_z=0, prob=1.0):
         self.deform_list.append(Rotate(not self.is_3D, angel_x, angle_y, angle_z, prob))
 
-    def elastic(self, sigma, alpha, mode='reflect', c_val=0, truncate=4.0, prob=1.0):
+    def elastic(self, sigma, alpha, mode='constant', c_val=0, truncate=4.0, prob=1.0):
         self.deform_list.append(Elastic(sigma, alpha, mode, c_val, truncate, prob))
 
     def end_flag(self):
@@ -246,7 +246,6 @@ class Handle(object):
         coords = np.ones(coords_shape).astype(np.float32)
         check(self.cuda_handle, coords)
         # coords = coords.astype(np.int)
-        import ipdb; ipdb.set_trace()
         return coords
 
     def deform_coords(self):

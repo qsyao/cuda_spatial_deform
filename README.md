@@ -15,6 +15,7 @@ A fast tool to do image augmentation on GPU, can be helpful to research on Medic
 - Doing Spation_Defrom by doing calculates on coordinates, all transformations get combined before they are applied to the image
 - Implement map_coordinates by linear interpolation.
 - Unit test pass when over 99% pixels has L1_loss < 1e-3.
+- Flexible with coordinates, users can fetch them from CUDA and do cubic interpolation at CPU by scipy.map_coordinates(order = 3)
 
 ## Speed Test
 Test on 3D image , shape = [48, 240, 240]
@@ -39,7 +40,7 @@ make -j8
 from cuda_spatial_defrom import Cuda_Spatial_Deform
 
 # Init Handle
-cuda_handle = Handle(array_image.shape, mode="constant")
+cuda_handle = Cuda_Spatial_Deform(array_image.shape, mode="constant")
 '''
     Shape: cuda_backend will malloc according to shape
     RGB: bool (Only Support 2D-RGB)
@@ -63,6 +64,9 @@ cuda_handle.end_flag()
 # The shape must be equal to cuda_handle.shape
 array_image = load_np_array(data_pth)
 output = cuda_handle.augment(array_image)
+# done_list will list the translations actually done
+done_list = output[1]
+output_array = output[0]
 ```
 
 ## Example_Image
