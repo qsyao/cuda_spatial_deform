@@ -17,6 +17,12 @@ A fast tool to do image augmentation on GPU, can be helpful to research on Medic
 - Unit test pass when over 99% pixels has L1_loss < 1e-3.
 
 ## Speed Test
+Test on 3D image , shape = [48, 240, 240]
+
+Time(ms) | Rotate | Elastic
+---  | --- | ---
+CUDA | 14 | 40
+CPU | 304 | 1821
 
 ## How to Use
 
@@ -62,15 +68,15 @@ output = cuda_handle.augment(array_image)
 ## Example_Image
 
 ### Flip
-
+![Flip](https://github.com/qsyao/cuda_spatial_defrom/blob/master/data/Daenerys_Flip.jpg)
 ### Rotate
-
+![Rotate](https://github.com/qsyao/cuda_spatial_defrom/blob/master/data/Daenerys_Rotate.jpg)
 ### Translate
-
+![Translate](https://github.com/qsyao/cuda_spatial_defrom/blob/master/data/Daenerys_Translate.jpg)
 ### Scale
-
+![Scale](https://github.com/qsyao/cuda_spatial_defrom/blob/master/data/Daenerys_Scale.jpg)
 ### Elastic_Deform
-
+![Elastic_Deform](https://github.com/qsyao/cuda_spatial_defrom/blob/master/data/Daenerys_Elastic.jpg)
 ## Reference
 [batchgenerators](https://github.com/MIC-DKFZ/batchgenerators)
 
