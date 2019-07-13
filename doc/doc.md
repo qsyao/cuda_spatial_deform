@@ -12,7 +12,7 @@ make -j8
 ### Set_Config
 ```python
 # Import cuda_spation_deform Handle
-from cuda_spatial_defrom import Cuda_Spatial_Deform
+from cuda_spatial_deform import Cuda_Spatial_Deform
 
 # Init Handle
 cuda_handle = Handle(array_image.shape, mode="constant")
@@ -24,7 +24,7 @@ cuda_handle = Handle(array_image.shape, mode="constant")
     id_gpu: choose the number of GPU
 '''
 
-# Choose your Rules of spatial_defrom
+# Choose your Rules of spatial_deform
 
 # cuda_handle.scale(0.5)
 # cuda_handle.flip(do_y=True, do_x=True, do_z=True)
