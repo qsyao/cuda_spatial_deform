@@ -12,7 +12,7 @@ A fast tool to do image augmentation by CUDA on GPU(especially elastic deform), 
 - Very Fast, speed up 25x at rotation, 45x at elastic_deform.
 - Support many types of spatial deform: flip, rotate, scale, translate, elastic_deform.
 - Support many rules of map_coordinates: mirror, constant, reflect, wrap, nearest.
-- Doing Spation_Deform by doing calculates on coordinates, all transformations get combined before they are applied to the image
+- Doing Spatial_Deform by doing calculates on coordinates, all transformations get combined before they are applied to the image
 - Implement map_coordinates by linear interpolation.
 - Unit test pass when over 99% pixels has L1_loss < 1e-3.
 - Flexible with coordinates, users can fetch them form CUDA and do cubic interpolation at CPU by scipy.map_coordinates(order = 3)
@@ -44,7 +44,7 @@ cuda_handle = Cuda_Spatial_Deform(array_image.shape, mode="constant")
 '''
     Shape: cuda_backend will malloc according to shape
     RGB: bool (Only Support 2D-RGB)
-    mode: The rules of map_coordinates. Refernce to  https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.map_coordinates.html
+    mode: The rules of map_coordinates. Reference  to  https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.map_coordinates.html
     cval: default is 0.0. Only be useful when mode == 'constant'
     id_gpu: choose the number of GPU
 '''
