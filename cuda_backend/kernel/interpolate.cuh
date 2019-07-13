@@ -6,16 +6,18 @@
 #include <helper_functions.h>
 #include <helper_cuda.h>
 
-__global__ void linear_interplate_2D(float* coords, 
+__global__ void interplate_2D(float* coords, 
                                      float* img, 
                                      float* output, 
+                                     int order,
                                      size_t dim_y,
                                      size_t dim_x,
                                      int mode, float cval);
 
-__global__ void linear_interplate_3D(float* coords, 
+__global__ void interplate_3D(float* coords, 
                                     float* img, 
                                     float* output,
+                                    int order,
                                     size_t dim_z,
                                     size_t dim_y,
                                     size_t dim_x,

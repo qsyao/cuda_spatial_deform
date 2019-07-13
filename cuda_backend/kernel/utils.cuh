@@ -47,7 +47,8 @@ public:
 
     void scale(float scale);
 
-    void interpolate_linear();
+    // Order = 1 : Linear   Order = 0: Nearest
+    void interpolate(int order);
 
     void reset();
 

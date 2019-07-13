@@ -246,16 +246,16 @@ void Handle::check_coords(float* output){
     memcpy(output, pin_coords, coords_size * sizeof(float));       
 }
 
-void Handle::interpolate_linear(){
+void Handle::interpolate(int order){
     dim3 threads(min(total_size, (long)512), 1, 1);
     dim3 blocks(total_size/512 + 1, 1, 1);
 
     if(is_3D){
-        linear_interplate_3D<<<blocks, threads, 0, stream>>>(coords, img, output,
+        interplate_3D<<<blocks, threads, 0, stream>>>(coords, img, output, order,
                                                             dim_z, dim_y, dim_x, mode_type, c_val);
     }
     else{
-        linear_interplate_2D<<<blocks, threads, 0, stream>>>(coords, img, output,
+        interplate_2D<<<blocks, threads, 0, stream>>>(coords, img, output, order,
                                                              dim_y, dim_x, mode_type, c_val);
     }
 }

@@ -14,12 +14,13 @@ Handle* init_3D_handle(size_t z, size_t y, size_t x, int mode_type, float c_val,
     return ret;
 }
 
-void linear_interpolate(Handle* cuda_handle, 
+void interpolate(Handle* cuda_handle, 
                         float* output, 
-                        float* input, 
+                        float* input,
+                        int order,
                         int do_reset){
     cuda_handle->copy_input(input);
-    cuda_handle->interpolate_linear();
+    cuda_handle->interpolate(order);
     cuda_handle->copy_output(output);
     if(do_reset)
         cuda_handle->reset();

@@ -36,20 +36,20 @@ def test_3D():
     sitk_image = sitk.ReadImage(data_pth)
     array_image = sitk.GetArrayFromImage(sitk_image).copy()
 
-    cuda_handle = Handle(array_image.shape, mode="constant")
+    cuda_handle = Handle(array_image.shape, mode="mirror")
     # cuda_handle.test()
     # cuda_handle.scale(0.5)
     # cuda_handle.flip(do_y=True, do_x=True, do_z=True)
     # cuda_handle.translate(100, 100, 20)
-    # cuda_handle.rotate(0.75 * np.pi, 0.75 * np.pi, 0.75 * np.pi)
-    cuda_handle.elastic(sigma=12., alpha=200., mode='constant')
+    cuda_handle.rotate(0.75 * np.pi, 0.75 * np.pi, 0.75 * np.pi)
+    # cuda_handle.elastic(sigma=12., alpha=200., mode='constant')
     cuda_handle.end_flag()
 
-    correct_ret = deform.spatial_augment(array_image, mode="constant")
+    correct_ret = deform.spatial_augment(array_image, mode="mirror")
     # Warm up and Unit test
     for i in range(100):
-        output = cuda_handle.augment(array_image)
-    # check(correct_ret, output[0])
+        output = cuda_handle.augment(array_image, order=0)
+    check(correct_ret, output[0])
 
     start = time.time()
     for i in range(Iters):

@@ -13,7 +13,7 @@ A fast tool to do image augmentation by CUDA on GPU(especially elastic deform), 
 - Support many types of spatial deform: flip, rotate, scale, translate, elastic_deform.
 - Support many rules of map_coordinates: mirror, constant, reflect, wrap, nearest.
 - Doing Spatial_Deform by doing calculates on coordinates, all transformations get combined before they are applied to the image
-- Implement map_coordinates by linear interpolation.
+- Implement map_coordinates by linear interpolation(for image) and nearest interpolation(for labels).
 - Unit test pass when over 99% pixels has L1_loss < 1e-3.
 - Flexible with coordinates, users can fetch them form CUDA and do cubic interpolation at CPU by scipy.map_coordinates(order = 3)
 
@@ -63,7 +63,7 @@ cuda_handle.end_flag()
 ```python
 # The shape must be equal to cuda_handle.shape
 array_image = load_np_array(data_pth)
-output = cuda_handle.augment(array_image)
+output = cuda_handle.augment(array_image, order=1)
 # done_list will list the translations actually done
 done_list = output[1]
 output_array = output[0]

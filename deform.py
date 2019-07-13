@@ -79,7 +79,7 @@ def spatial_augment(img, RGB=False, do_scale=True, scale=0.5, angle=0.75*np.pi, 
         coords[d] += ctr
 
     if not RGB:
-        ret = map_coordinates(img, coords, order=1, \
+        ret = map_coordinates(img, coords, order=0, \
                     mode=mode).astype(img.dtype)
     else:
         assert(img.shape[0] == 3)

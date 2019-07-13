@@ -14,8 +14,8 @@ init_3D = lib.init_3D_handle
 init_3D.argtypes = [c_int, c_int, c_int, c_int, c_float, c_int]
 init_3D.restype = c_void_p
 
-l_i = lib.linear_interpolate
-l_i.argtypes = [c_void_p, ndpointer(np.float32), ndpointer(np.float32), c_int]
+l_i = lib.interpolate
+l_i.argtypes = [c_void_p, ndpointer(np.float32), ndpointer(np.float32), c_int, c_int]
 
 check = lib.check_coords
 check.argtypes = [c_void_p, ndpointer(np.float32)]
@@ -199,7 +199,7 @@ class Handle(object):
             self.is_3D = True
             self.cuda_handle = init_3D(shape[0], shape[1],  shape[2], type_mode, float(cval), id_gpu)
     
-    def augment(self, img):
+    def augment(self, img, order=1):
         if self.RGB:
             assert(img.shape[0] == 3)
             assert(img.shape[1:] == self.shape)
@@ -212,13 +212,13 @@ class Handle(object):
         # self.get_coords()
 
         if not self.RGB:
-            l_i(self.cuda_handle, output, img, 1)
+            l_i(self.cuda_handle, output, img, order, 1)
         else:
             for i in range(3):
                 if i == 2:
-                    l_i(self.cuda_handle, output[i], img[i], 1)
+                    l_i(self.cuda_handle, output[i], img[i], order, 1)
                 else:
-                    l_i(self.cuda_handle, output[i], img[i], 0)
+                    l_i(self.cuda_handle, output[i], img[i], order, 0)
 
         return [output, labels]
 
