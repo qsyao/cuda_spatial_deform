@@ -5,17 +5,17 @@ A fast tool to do image augmentation by CUDA on GPU(especially elastic deform), 
 ## Motivation
 - When the size of image is too large, it will take a lot of time(much more than forward and backward computation like U_Net), especially for 3D image(like CT).
 - Elastic deformation on CPU is too slow.
-- Doing Sptial_Defrom by muti-processing consumes of too much CPU resources, whitch most GPU servers(like 32 cores with 4 gpus) can not afford.
+- Doing Sptial_Deform by muti-processing consumes of too much CPU resources, whitch most GPU servers(like 32 cores with 4 gpus) can not afford.
 
 ## Implementation Overview
-- Doing Spation_Defrom on GPU instead of CPU, greatly saving CPU resources.
-- Very Fast, speed up 25x at rotation, 45x at elastic_defrom.
-- Support many types of spatial defrom: flip, rotate, scale, translate, elastic_deform.
+- Doing Spation_Deform on GPU instead of CPU, greatly saving CPU resources.
+- Very Fast, speed up 25x at rotation, 45x at elastic_deform.
+- Support many types of spatial deform: flip, rotate, scale, translate, elastic_deform.
 - Support many rules of map_coordinates: mirror, constant, reflect, wrap, nearest.
-- Doing Spation_Defrom by doing calculates on coordinates, all transformations get combined before they are applied to the image
+- Doing Spation_Deform by doing calculates on coordinates, all transformations get combined before they are applied to the image
 - Implement map_coordinates by linear interpolation.
 - Unit test pass when over 99% pixels has L1_loss < 1e-3.
-- Flexible with coordinates, users can fetch them from CUDA and do cubic interpolation at CPU by scipy.map_coordinates(order = 3)
+- Flexible with coordinates, users can fetch them form CUDA and do cubic interpolation at CPU by scipy.map_coordinates(order = 3)
 
 ## Speed Test
 Test on 3D image , shape = [48, 240, 240]
@@ -37,7 +37,7 @@ make -j8
 ### Set_Config
 ```python
 # Import cuda_spation_deform Handle
-from cuda_spatial_defrom import Cuda_Spatial_Deform
+from cuda_spatial_deform import Cuda_Spatial_Deform
 
 # Init Handle
 cuda_handle = Cuda_Spatial_Deform(array_image.shape, mode="constant")
@@ -49,7 +49,7 @@ cuda_handle = Cuda_Spatial_Deform(array_image.shape, mode="constant")
     id_gpu: choose the number of GPU
 '''
 
-# Choose your Rules of spatial_defrom
+# Choose your Rules of spatial_deform
 
 # cuda_handle.scale(0.5)
 # cuda_handle.flip(do_y=True, do_x=True, do_z=True)
@@ -72,15 +72,15 @@ output_array = output[0]
 ## Example_Image
 
 ### Flip
-![Flip](https://github.com/qsyao/cuda_spatial_defrom/blob/master/data/Daenerys_Flip.jpg)
+![Flip](https://github.com/qsyao/cuda_spatial_deform/blob/master/data/Daenerys_Flip.jpg)
 ### Rotate
-![Rotate](https://github.com/qsyao/cuda_spatial_defrom/blob/master/data/Daenerys_Rotate.jpg)
+![Rotate](https://github.com/qsyao/cuda_spatial_deform/blob/master/data/Daenerys_Rotate.jpg)
 ### Translate
-![Translate](https://github.com/qsyao/cuda_spatial_defrom/blob/master/data/Daenerys_Translate.jpg)
+![Translate](https://github.com/qsyao/cuda_spatial_deform/blob/master/data/Daenerys_Translate.jpg)
 ### Scale
-![Scale](https://github.com/qsyao/cuda_spatial_defrom/blob/master/data/Daenerys_Scale.jpg)
+![Scale](https://github.com/qsyao/cuda_spatial_deform/blob/master/data/Daenerys_Scale.jpg)
 ### Elastic_Deform
-![Elastic_Deform](https://github.com/qsyao/cuda_spatial_defrom/blob/master/data/Daenerys_Elastic.jpg)
+![Elastic_Deform](https://github.com/qsyao/cuda_spatial_deform/blob/master/data/Daenerys_Elastic.jpg)
 ## Reference
 [batchgenerators](https://github.com/MIC-DKFZ/batchgenerators)
 
