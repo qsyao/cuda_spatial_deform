@@ -69,7 +69,7 @@ __global__ void flip_3D(float* coords,
     size_t total_xy = dim_x * dim_y;
     size_t id_x = index % dim_x;
     size_t id_y = (index / dim_x) % dim_x;
-    size_t id_z = index / (dim_x * dim_x);
+    size_t id_z = index / (dim_x * dim_y);
     if(index < total){
         if(do_x && id_x < (dim_x / 2)){
             exchange(coords[2 * total + id_z * total_xy + id_y * dim_x + id_x], 
