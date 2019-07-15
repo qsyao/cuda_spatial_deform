@@ -31,7 +31,7 @@ void check_coords(Handle* cuda_handle, float* coords){
 }
 
 void cu_scale(Handle* cuda_handle, float scale){
-    assert(scale > 0.0 && scale < 1.0);
+    assert(scale > 0.0);
     cuda_handle->scale(scale);
 }
 

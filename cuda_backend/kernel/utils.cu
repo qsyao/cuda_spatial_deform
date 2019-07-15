@@ -108,7 +108,7 @@ void Handle::set_3D(size_t z, size_t y, size_t x){
 }
 
 void Handle::scale(float scale){
-    assert(scale <= 1.0 && scale > 0.0);
+    assert(scale > 0.0);
     dim3 threads(min(coords_size, (long)512), 1, 1);
     dim3 blocks(coords_size/512 + 1, 1, 1);
     device_apply_scale<<<blocks, threads, 0, stream>>>(coords, scale, coords_size);

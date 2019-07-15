@@ -51,7 +51,7 @@ class Spatial_Deform(object):
 class Scale(Spatial_Deform):
     def __init__(self, sc, prob=1.0):
         Spatial_Deform.__init__(self, prob)
-        assert(sc > 0 and sc <= 1.0)
+        assert(sc > 0)
         self.sc = sc
         self.label = 'Scale'
     

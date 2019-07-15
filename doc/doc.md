@@ -54,7 +54,7 @@ def __init__(self, shape, RGB=False, mode='constant', cval=0.0, id_gpu=0):
 ```python
 def scale(self, sc, prob=1.0):
 ```
-- sc : rate of Scale , must in [0, 1]
+- sc : rate of Scale , must > 0
 - prob : The probability of doing this augmentation
 
 ```python
