@@ -103,8 +103,9 @@ def deform_coords(self):
 Only calculates on coordinates.
 
 ```python
-def augment(self, img, order=1):
+def augment(self, img, order=1, keep_coords=False):
 ```
 - assert(img.shape == self.shape)
 - order: default is 1 for linear, 0 for nearest
+- keep_coords: not doing coords translation
 - return the list of output_array and done_list 

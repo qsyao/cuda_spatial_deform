@@ -199,14 +199,15 @@ class Handle(object):
             self.is_3D = True
             self.cuda_handle = init_3D(shape[0], shape[1],  shape[2], type_mode, float(cval), id_gpu)
     
-    def augment(self, img, order=1):
+    def augment(self, img, order=1, keep_coords=False):
         if self.RGB:
             assert(img.shape[0] == 3)
             assert(img.shape[1:] == self.shape)
         else:
             assert(img.shape == self.shape)
         output = np.ones(img.shape).astype(np.float32)
-        labels = self.deform_coords()
+        if not keep_coords:
+            labels = self.deform_coords()
         
         # # check coords
         # self.get_coords()
