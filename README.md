@@ -1,21 +1,21 @@
 # Cuda_Spatial_Deform
 
-A fast tool to do image augmentation by CUDA on GPU(especially elastic deform), can be helpful to research on Medical Image.
+A fast tool to do image augmentation by CUDA on GPU(especially elastic deformation), can be helpful to research on Medical Image Analysis.
 
 ## Motivation
-- When the size of image is too large, it will take a lot of time(much more than forward and backward computation like U_Net), especially for 3D image(like CT).
+- When the size of image is too large, it takes a lot of time(much more than forward and backward computation say in U_Net), especially for 3D image(like CT).
 - Elastic deformation on CPU is too slow.
-- Doing Sptial_Deform by muti-processing consumes of too much CPU resources, whitch most GPU servers(like 32 cores with 4 gpus) can not afford.
+- Doing Sptial_Deform by muti-processing consumes of too much CPU resources, to which most GPU servers(like 32 cores with 4 gpus) can not afford.
 
 ## Implementation Overview
 - Doing Spation_Deform on GPU instead of CPU, greatly saving CPU resources.
-- Very Fast, speed up 25x at rotation, 45x at elastic_deform.
-- Support many types of spatial deform: flip, rotate, scale, translate, elastic_deform.
+- Very Fast, speed up 25x for rotation, 45x for elastic_deformation.
+- Support many types of spatial deform: flip, rotate, scale, translate, elastic_deformation.
 - Support many rules of map_coordinates: mirror, constant, reflect, wrap, nearest.
-- Doing Spatial_Deform by doing calculates on coordinates, all transformations get combined before they are applied to the image
-- Implement map_coordinates by linear interpolation(for image) and nearest interpolation(for labels).
-- Unit test pass when over 99% pixels has L1_loss < 1e-3.
-- Flexible with coordinates, users can fetch them form CUDA and do cubic interpolation at CPU by scipy.map_coordinates(order = 3)
+- Doing Spatial_Deform by doing calculations of coordinates, all transformations get combined before they are applied to the image
+- Implement map_coordinates by linear interpolation(for image) and the nearest interpolation(for labels).
+- Unit test passes when over 99% pixels has L1_loss < 1e-3.
+- Users can fetch coordinates from CUDA and do cubic interpolation at CPU by scipy.map_coordinates(order = 3)
 
 ## Speed Test
 Test on 3D image , shape = [48, 240, 240]
@@ -24,6 +24,12 @@ Time(ms) | Rotate | Elastic
 ---  | --- | ---
 CUDA | 14 | 40
 CPU | 304 | 1821
+
+## Citation
+If you use our code, please cite our paper:
+
+Chao Huang, Hu Han, Qingsong Yao, Shankuan Zhu, S. Kevin Zhou. , 3D U<sup>2</sup>-Net: A 3D Universal U-Net for Multi-Domain Medical Image Segmentation, MICCAI 2019.
+
 
 ## How to Use
 
