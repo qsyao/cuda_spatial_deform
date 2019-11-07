@@ -66,6 +66,8 @@ cuda_handle.end_flag()
 ```
 
 ### DO augmentation
+Warning: The numpy array that python frontend deliverd to the cuda backend must be continuous and have the correct order of dimensions in the real memory.
+So if you want to use function(transpose) to change the shape of array, you must use array.transpose().copy().
 ```python
 # The shape must be equal to cuda_handle.shape
 array_image = load_np_array(data_pth)
