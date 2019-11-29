@@ -109,3 +109,18 @@ def augment(self, img, order=1, keep_coords=False):
 - order: default is 1 for linear, 0 for nearest
 - keep_coords: not doing coords translation
 - return the list of output_array and done_list 
+
+
+```python
+def interpolate(self, img, order=1e):
+```
+Info: This func only interpolate input array with coordinates stored in backend.
+- assert(img.shape == self.shape)
+- order: default is 1 for linear, 0 for nearest
+- return the list of output_array
+
+
+```python
+def deform_coordinates(self):
+```
+Info: This func only deform coordinates by compute flow definated above.
