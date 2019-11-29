@@ -38,6 +38,9 @@ rotate_2D.argtypes = [c_void_p, c_float]
 rotate_3D = lib.cu_rotate_3D
 rotate_3D.argtypes = [c_void_p, ndpointer(np.float32)]
 
+coords_reset = lib.cu_reset
+coords_reset.argtypes = [c_void_p]
+
 elastic = lib.cu_elastic
 elastic.argtypes = [c_void_p, c_float, c_float, c_float, c_int, c_float]
 
@@ -281,3 +284,4 @@ class Handle(object):
     
     def reset(self):
         self.deform_list.clear()
+        coords_reset(self.cuda_handle)
