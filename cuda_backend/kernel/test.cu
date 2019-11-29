@@ -26,6 +26,10 @@ void interpolate(Handle* cuda_handle,
         cuda_handle->reset();
 }
 
+void cu_reset(Handle* cuda_handle){
+    cuda_handle->reset();
+}
+    
 void check_coords(Handle* cuda_handle, float* coords){
     cuda_handle->check_coords(coords);
 }
