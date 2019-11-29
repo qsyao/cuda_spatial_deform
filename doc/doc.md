@@ -112,7 +112,7 @@ def augment(self, img, order=1, keep_coords=False):
 
 
 ```python
-def interpolate(self, img, order=1e):
+def interpolate(self, img, order=1):
 ```
 Info: This func only interpolate input array with coordinates stored in backend.
 - assert(img.shape == self.shape)
