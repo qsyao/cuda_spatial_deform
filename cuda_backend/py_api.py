@@ -213,15 +213,37 @@ class Handle(object):
         # self.get_coords()
 
         if not self.RGB:
-            l_i(self.cuda_handle, output, img, order, 1)
+            l_i(self.cuda_handle, output, img, order, 1-int(keep_coords))
         else:
             for i in range(3):
                 if i == 2:
-                    l_i(self.cuda_handle, output[i], img[i], order, 1)
+                    l_i(self.cuda_handle, output[i], img[i], order, 1-int(keep_coords))
                 else:
                     l_i(self.cuda_handle, output[i], img[i], order, 0)
 
         return [output, labels]
+    
+    def deform_coordinates(self):
+        labels = self.deform_coords()
+        return labels
+    
+    def interpolate(self, img, order=1):
+        if self.RGB:
+            assert(img.shape[0] == 3)
+            assert(img.shape[1:] == self.shape)
+        else:
+            assert(img.shape == self.shape)
+        output = np.ones(img.shape).astype(np.float32)
+        
+        # # check coords
+        # self.get_coords()
+
+        if not self.RGB:
+            l_i(self.cuda_handle, output, img, order, 0)
+        else:
+            for i in range(3):
+                l_i(self.cuda_handle, output[i], img[i], order, 0)
+        return output
 
     def scale(self, sc, prob=1.0):
         self.deform_list.append(Scale(sc, prob))
