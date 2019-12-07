@@ -69,9 +69,9 @@ cuda_handle.end_flag()
 Warning: The numpy array that python frontend deliverd to the cuda backend must be continuous and have the correct order of dimensions in the real memory.
 So if you want to use function(transpose) to change the shape of array, you must use array.transpose().copy().
 Info: There are two step to do augmentation. You can lookup the functions in doc.md.
-1 Deform coordinates stored in cuda backend by computation flow definated above.
-2 Interpolate the input array with coordinates
-3(optional) Reset the coordinates.
+1. Deform coordinates stored in cuda backend by computation flow definated above.
+2. Interpolate the input array with coordinates
+3. (optional) Reset the coordinates.
 ```python
 # The shape must be equal to cuda_handle.shape
 array_image = load_np_array(data_pth)
@@ -79,6 +79,18 @@ output = cuda_handle.augment(array_image, order=1)
 # done_list will list the translations actually done
 done_list = output[1]
 output_array = output[0]
+```
+
+### Interpolate images with the same deformed coordinates
+You can look up these functions in doc.md
+1. Define your computation flow
+2. call cuda_handle.deform_coords
+3. call cuda_handle.interpolate
+```python
+# define your computation flow
+labels = cuda_handle.deform_coords()
+for img in imgs_list:
+    output = cuda_handle.interpolate(img, order=1)
 ```
 
 ## Example_Image
