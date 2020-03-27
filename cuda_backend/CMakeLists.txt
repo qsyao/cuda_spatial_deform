@@ -17,7 +17,7 @@ include_directories(${CUDA_TOOLKIT_ROOT_DIR}/samples/common/inc/)
 message("warning: CUDA_TOOLKIT_ROOT_DIR: ")
 message(${CUDA_TOOLKIT_ROOT_DIR})
 
-list(APPEND cudaAugmentation_EXTERNAL_LIBRARIES ${CUDA_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CUDA_curand_LIBRARY})
+list(APPEND cudaAugmentation_EXTERNAL_LIBRARIES ${CUDA_LIBRARIES} ${CUDA_curand_LIBRARY})
 include_directories(${CUDA_INCLUDE_DIRS})
 
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};--expt-relaxed-constexpr)
